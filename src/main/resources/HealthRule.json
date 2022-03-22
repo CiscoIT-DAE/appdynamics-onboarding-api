@@ -1,0 +1,690 @@
+{
+	"healthRuleData":
+[
+{
+    
+    "name": "Agent Down - A Cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 20,
+    "waitTimeAfterViolation": 20,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "TIER_NODE_HARDWARE",
+        "affectedEntities": {
+            "tierOrNode": "NODE_AFFECTED_ENTITIES",
+            "typeofNode": "ALL_NODES",
+            "affectedNodes": {
+                "affectedNodeScope": "ALL_NODES"
+            }
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": null,
+        "warningCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "condition 1",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "SUM",
+                        "metricPath": "Agent|App|Availability",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "LESS_THAN_SPECIFIC_VALUE",
+                            "compareValue": 10
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": null
+        }
+    }
+},
+{
+   
+    "name": "Business Transaction error rate is much higher than normal-A Cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "BUSINESS_TRANSACTION_PERFORMANCE",
+        "affectedBusinessTransactions": {
+            "businessTransactionScope": "ALL_BUSINESS_TRANSACTIONS"
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "Errors per Minute Baseline Condition",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Errors per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "BASELINE_TYPE",
+                            "baselineCondition": "GREATER_THAN_BASELINE",
+                            "baselineName": "Default Baseline",
+                            "compareValue": 3,
+                            "baselineUnit": "STANDARD_DEVIATIONS"
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "Errors per Minute Condition",
+                    "shortName": "B",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "SUM",
+                        "metricPath": "Errors per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 10
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "Calls per Minute Condition",
+                    "shortName": "C",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Calls per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 50
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": {
+                "matchType": "ANY_NODE",
+                "value": null
+            }
+        },
+        "warningCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "Errors per Minute Baseline Condition",
+                    "shortName": "D",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Errors per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "BASELINE_TYPE",
+                            "baselineCondition": "GREATER_THAN_BASELINE",
+                            "baselineName": "Default Baseline",
+                            "compareValue": 2,
+                            "baselineUnit": "STANDARD_DEVIATIONS"
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "Errors per Minute Condition",
+                    "shortName": "E",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "SUM",
+                        "metricPath": "Errors per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 5
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "Calls per Minute Condition",
+                    "shortName":"F",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Calls per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 50
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": {
+                "matchType": "ANY_NODE",
+                "value": null
+            }
+        }
+    }
+},
+
+{
+    
+    "name": "Business Transaction response time is much higher than normal-A Cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "BUSINESS_TRANSACTION_PERFORMANCE",
+        "affectedBusinessTransactions": {
+            "businessTransactionScope": "ALL_BUSINESS_TRANSACTIONS"
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "Average Response Time (ms) Baseline Condition",
+                    "shortName":"A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Average Response Time (ms)",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "BASELINE_TYPE",
+                            "baselineCondition": "GREATER_THAN_BASELINE",
+                            "baselineName": "Default Baseline",
+                            "compareValue": 3,
+                            "baselineUnit": "STANDARD_DEVIATIONS"
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "Calls per Minute Condition",
+                    "shortName": "B",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Calls per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 50
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": {
+                "matchType": "ANY_NODE",
+                "value": null
+            }
+        },
+        "warningCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "Average Response Time (ms) Baseline Condition",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Average Response Time (ms)",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "BASELINE_TYPE",
+                            "baselineCondition": "GREATER_THAN_BASELINE",
+                            "baselineName": "Default Baseline",
+                            "compareValue": 2,
+                            "baselineUnit": "STANDARD_DEVIATIONS"
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "Calls per Minute Condition",
+                    "shortName": "B",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Calls per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 100
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": {
+                "matchType": "ANY_NODE",
+                "value": null
+            }
+        }
+    }
+},
+
+{
+    
+    "name": "CPU utilization is too high-A Cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "TIER_NODE_HARDWARE",
+        "affectedEntities": {
+            "tierOrNode": "NODE_AFFECTED_ENTITIES",
+            "typeofNode": "ALL_NODES",
+            "affectedNodes": {
+                "affectedNodeScope": "ALL_NODES"
+            }
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "JVM|Process CPU Usage %",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Process CPU Usage %",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 90
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": null
+        },
+        "warningCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "JVM|Process:CPU|Used % Condition",
+                    "shortName": "B",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Process CPU Usage %",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 75
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": null
+        }
+    }
+},
+
+{
+   
+    "name": "JVM Garbage Collection Time is too high-A Cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "TIER_NODE_HARDWARE",
+        "affectedEntities": {
+            "tierOrNode": "NODE_AFFECTED_ENTITIES",
+            "typeofNode": "JAVA_NODES",
+            "affectedNodes": {
+                "affectedNodeScope": "ALL_NODES"
+            }
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "JVM|Garbage Collection|GC Time Spent Per Min (ms) Condition",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Garbage Collection|GC Time Spent Per Min (ms)",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 45000
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": null
+        },
+        "warningCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "JVM|Garbage Collection|GC Time Spent Per Min (ms) Condition",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Garbage Collection|GC Time Spent Per Min (ms)",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 30000
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": null
+        }
+    }
+},
+{
+    
+    "name": "JVM Heap and GC Time is too high-A Cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "TIER_NODE_HARDWARE",
+        "affectedEntities": {
+            "tierOrNode": "NODE_AFFECTED_ENTITIES",
+            "typeofNode": "ALL_NODES",
+            "affectedNodes": {
+                "affectedNodeScope": "ALL_NODES"
+            }
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "Hardware Resources|Memory|Used % Condition",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Memory:Heap|Used %",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 90
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "condition 2",
+                    "shortName": "B",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Garbage Collection|GC Time Spent Per Min (ms)",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 45000
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": null
+        },
+        "warningCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "Hardware Resources|Memory|Used % Condition",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Memory:Heap|Used %",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 75
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                },
+                {
+                    "name": "condition 2",
+                    "shortName": "B",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "JVM|Garbage Collection|GC Time Spent Per Min (ms)",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 30000
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": null
+        }
+    }
+},
+
+
+{
+    
+    "name": "SocketTimeoutException -  A cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "ERRORS",
+        "affectedErrors": {
+            "errorScope": "ERRORS_MATCHING_PATTERN",
+            "patternMatcher": {
+                "matchTo": "CONTAINS",
+                "matchValue": "SocketTimeoutException",
+                "shouldNot": false
+            }
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "condition 1",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Errors per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 0
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": {
+                "matchType": "ANY_NODE",
+                "value": null
+            }
+        },
+        "warningCriteria": null
+    }
+},
+{
+    
+    "name": "OutOfMemoryError - A Cisco default health rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "ERRORS",
+        "affectedErrors": {
+            "errorScope": "ERRORS_MATCHING_PATTERN",
+            "patternMatcher": {
+                "matchTo": "CONTAINS",
+                "matchValue": "java.lang.OutOfMemoryError",
+                "shouldNot": false
+            }
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "condition 1",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Errors per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 0
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": {
+                "matchType": "ANY_NODE",
+                "value": null
+            }
+        },
+        "warningCriteria": null
+    }
+},
+{
+    
+    "name": "javax.resource.ResourceException - A Cisco default helath rule",
+    "enabled": true,
+    "useDataFromLastNMinutes": 30,
+    "waitTimeAfterViolation": 30,
+    "scheduleName": "Always",
+    "affects": {
+        "affectedEntityType": "ERRORS",
+        "affectedErrors": {
+            "errorScope": "ERRORS_MATCHING_PATTERN",
+            "patternMatcher": {
+                "matchTo": "CONTAINS",
+                "matchValue": "javax.resource.ResourceException",
+                "shouldNot": false
+            }
+        }
+    },
+    "evalCriterias": {
+        "criticalCriteria": {
+            "conditionAggregationType": "ALL",
+            "conditionExpression": null,
+            "conditions": [
+                {
+                    "name": "condition 1",
+                    "shortName": "A",
+                    "evaluateToTrueOnNoData": false,
+                    "evalDetail": {
+                        "evalDetailType": "SINGLE_METRIC",
+                        "metricAggregateFunction": "VALUE",
+                        "metricPath": "Errors per Minute",
+                        "metricEvalDetail": {
+                            "metricEvalDetailType": "SPECIFIC_TYPE",
+                            "compareCondition": "GREATER_THAN_SPECIFIC_VALUE",
+                            "compareValue": 0
+                        }
+                    },
+                    "triggerEnabled": false,
+                    "minimumTriggers": 0
+                }
+            ],
+            "evalMatchingCriteria": {
+                "matchType": "ANY_NODE",
+                "value": null
+            }
+        },
+        "warningCriteria": null
+    }
+}
+]
+}

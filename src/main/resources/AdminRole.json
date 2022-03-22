@@ -1,0 +1,128 @@
+{
+    "name": "$ROLE_NAME$",
+    "description": "This is Admin Role for Application",
+    "permissions": [
+        {            
+            "entityType": "ACCOUNT",
+            "entityId": 0,
+            "action": "VIEW_BUSINESS_FLOW"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_ACTIONS"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_AGENT_OPERATIONS"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_AGENT_PROPERTIES"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_BACKEND_DETECTION"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_BASELINES"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_BUSINESS_TRANSACTIONS"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_CALLGRAPH_SETTINGS"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_DIAGNOSTIC_DATA_COLLECTORS"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_ERROR_DETECTION"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_EVENT_REACTOR"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_INFO_POINTS"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_JMX"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_MEMORY_MONITORING"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_POLICIES"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_SERVICE_ENDPOINTS"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_SQL_BIND_VARIABLES"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_TRANSACTION_DETECTION"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "CONFIG_TRIGGER_DIAGNOSTIC_SESSION"
+        },
+        {            
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "VIEW"
+        },
+        {
+	        "entityType": "DBMON_COLLECTOR_DATA",
+	        "entityId": 0,
+	        "action": "VIEW"
+        }
+        ,
+        {
+	        "entityType": "DB_MONITOR_CONFIG",
+	        "entityId": 0,
+	        "action": "VIEW"
+        },
+        {
+            "entityType": "APPLICATION",
+            "entityId": $DB_ENTITY_ID$,
+            "action": "VIEW"
+        },
+        {
+           
+            "entityType": "DBMON_ACCOUNT_DATA",
+            "entityId": 0,
+            "action": "VIEW"
+        }
+    ]
+}

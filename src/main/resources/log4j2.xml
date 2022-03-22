@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+	
+	<Properties>
+   		<Property name="basePath">appd-onboarding-api-devnet</Property>   		
+        <Property name="LOG_PATTERN">%d{yyy-MM-dd HH:mm:ss} %X{TrackingID} [%t] %-5level %logger{36} - %msg%n</Property>
+  	</Properties>
+  	
+	<Appenders>		
+	    <Console name="Console" target="SYSTEM_OUT">
+	    	<PatternLayout pattern="${LOG_PATTERN}"/>
+	    </Console>
+	    
+		<RollingFile name="appdLog" fileName="${basePath}apponboarding.log" filePattern="${basePath}apponboarding-%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+            	<OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="20MB" />
+                <!-- <TimeBasedTriggeringPolicy /> -->
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>      
+        
+	    <RollingFile name="eumLicenseInfoLog" fileName="${basePath}eumLicenseHandler.log" filePattern="${basePath}eumLicenseHandler-%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+            	<OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="20MB" />
+                <!-- <TimeBasedTriggeringPolicy /> -->
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>            
+        </RollingFile> 
+            
+	</Appenders>
+	
+	<Loggers>
+		<Root level="INFO">    	
+	    	<AppenderRef ref="appdLog" />
+	    </Root>
+	    
+	    <!-- Application loggers--> 
+        <logger name="com.cicso.maas" level="debug" additivity="false">
+        	<AppenderRef ref="appdLog" />
+    	</logger>   	
+    	
+    	<logger name="com.cicso.maas.configuration.eumhandler" level="info" additivity="false">
+        	<AppenderRef ref="eumLicenseInfoLog"/>
+    	</logger>
+    	
+		<!-- 3rdparty Loggers -->
+		<logger name="org.springframework.core" level="info" additivity="false">
+			<AppenderRef ref="appdLog"/>
+		</logger>
+		
+		<logger name="org.springframework.beans" level="info" additivity="false">
+			<AppenderRef ref="appdLog"/>
+		</logger>
+		
+		<logger name="org.springframework.context" level="info" additivity="false">
+			<AppenderRef ref="appdLog"/>
+		</logger>
+			
+		<logger name="org.springframework.web" level="info" additivity="false">
+			<AppenderRef ref="appdLog"/>
+		</logger>
+	    
+	  </Loggers>
+</Configuration>

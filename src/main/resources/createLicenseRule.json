@@ -1,0 +1,36 @@
+{
+	"id": "$LICENSE_RULE_UUID$",
+	"name": "$LICENSE_RULE_NAME$",
+	"description": "Created by AppD On-boarding Automation",
+	"enabled": true,
+	"constraints": [{
+		"entity_type_id": "com.appdynamics.modules.apm.topology.impl.persistenceapi.model.MachineEntity",
+		"constraint_type": "ALLOW_ALL",
+		"match_conditions": []
+	}, {
+		"entity_type_id": "com.appdynamics.modules.apm.topology.impl.persistenceapi.model.ApplicationEntity",
+		"constraint_type": "ALLOW_SELECTED",
+		"match_conditions": [{
+			"match_type": "EQUALS",
+			"attribute_type": "NAME",
+			"match_string": "$APP_NAME$"
+		}]
+	}],
+	"entitlements": [{
+		"license_module_type": "NETVIZ",
+		"number_of_licenses": $NETVIZ_AGENT_LICENSE_COUNT$
+	}, {
+		"license_module_type": "MACHINE_AGENT",
+		"number_of_licenses": $MACHINE_AGENT_LICENSE_COUNT$
+	}, {
+		"license_module_type": "SIM_MACHINE_AGENT",
+		"number_of_licenses": $SIM_AGENT_LICENSE_COUNT$
+	}, {
+		"license_module_type": "APM",
+		"number_of_licenses": $APM_AGENT_LICENSE_COUNT$
+	}],
+	"account_id": "$ACCOUNT_ID$",
+	"access_key": "$ACCESS_KEY_UUID$",
+	"total_licenses": null,
+	"peak_usage": null
+}

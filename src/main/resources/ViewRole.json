@@ -1,0 +1,40 @@
+{
+    "name": "$ROLE_NAME$",
+    "description": "This  is View Role for Application",
+    "permissions": [
+        {
+            "entityType": "ACCOUNT",
+            "entityId": 0,
+            "action": "VIEW_BUSINESS_FLOW"
+        },
+        {
+            "entityType": "APPLICATION",
+            "entityId": $TARGET_APPLICATION_ID$,
+            "action": "VIEW"
+        }
+        ,
+        {
+	        "entityType": "DBMON_COLLECTOR_DATA",
+	        "entityId": 0,
+	        "action": "VIEW"
+        }
+        ,
+        {
+	        "entityType": "DB_MONITOR_CONFIG",
+	        "entityId": 0,
+	        "action": "VIEW"
+        },
+        {
+            "entityType": "APPLICATION",
+            "entityId": $DB_ENTITY_ID$,
+            "action": "VIEW"
+        },
+        
+        {
+           
+            "entityType": "DBMON_ACCOUNT_DATA",
+            "entityId": 0,
+            "action": "VIEW"
+        }
+    ]
+}

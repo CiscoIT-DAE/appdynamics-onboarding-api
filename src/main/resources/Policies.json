@@ -1,0 +1,293 @@
+{
+	"policiesData":
+		[
+			{
+
+				"name": "Agent stopped reporting - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": {
+							"healthRuleEventTypes": [
+								"HEALTH_RULE_OPEN_WARNING",
+								"HEALTH_RULE_CONTINUES_WARNING",
+								"HEALTH_RULE_CLOSE_CRITICAL",
+								"HEALTH_RULE_CLOSE_WARNING",
+								"HEALTH_RULE_CANCELED_CRITICAL",
+								"HEALTH_RULE_CANCELED_WARNING"
+								],
+								"healthRuleScope": {
+									"healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+									"healthRules": [
+										"Agent Down - A Cisco default health rule"
+										]
+								}
+						},
+						"otherEvents": [],
+						"anomalyEvents": null,
+						"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "Business Transaction error rate is much higher than normal - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": {
+							"healthRuleEventTypes": [
+								"HEALTH_RULE_OPEN_WARNING",
+								"HEALTH_RULE_OPEN_CRITICAL",
+								"HEALTH_RULE_CONTINUES_CRITICAL",
+								"HEALTH_RULE_CLOSE_CRITICAL",
+								"HEALTH_RULE_CLOSE_WARNING",
+								"HEALTH_RULE_CANCELED_CRITICAL",
+								"HEALTH_RULE_CANCELED_WARNING"
+								],
+								"healthRuleScope": {
+									"healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+									"healthRules": [
+										"Business Transaction error rate is much higher than normal-A Cisco default health rule"
+										]
+								}
+						},
+						"otherEvents": [],
+						"anomalyEvents": null,
+						"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "Business Transaction response time is much higher than normal  - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": {
+							"healthRuleEventTypes": [
+								"HEALTH_RULE_OPEN_WARNING",
+								"HEALTH_RULE_OPEN_CRITICAL",
+								"HEALTH_RULE_CONTINUES_CRITICAL",
+								"HEALTH_RULE_CLOSE_CRITICAL",
+								"HEALTH_RULE_CLOSE_WARNING",
+								"HEALTH_RULE_CANCELED_CRITICAL",
+								"HEALTH_RULE_CANCELED_WARNING"
+								],
+								"healthRuleScope": {
+									"healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+									"healthRules": [
+										"Business Transaction response time is much higher than normal-A Cisco default health rule"
+										]
+								}
+						},
+						"otherEvents": [],
+						"anomalyEvents": null,
+						"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "Code Deadlock has occurred - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": null,
+						"otherEvents": [
+							"DEADLOCK"
+							],
+							"anomalyEvents": null,
+							"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "Error occured - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": {
+							"healthRuleEventTypes": [
+								"HEALTH_RULE_OPEN_CRITICAL",
+								"HEALTH_RULE_CONTINUES_CRITICAL",
+								"HEALTH_RULE_CLOSE_CRITICAL",
+								"HEALTH_RULE_CLOSE_WARNING",
+								"HEALTH_RULE_CANCELED_CRITICAL",
+								"HEALTH_RULE_CANCELED_WARNING"
+								],
+								"healthRuleScope": {
+									"healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+									"healthRules": [
+										"SocketTimeoutException -  A cisco default health rule",
+										"OutOfMemoryError - A Cisco default health rule",
+										"javax.resource.ResourceException - A Cisco default helath rule"
+										]
+								}
+						},
+						"otherEvents": [],
+						"anomalyEvents": null,
+						"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "JVM CPU utilization is too high - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": {
+							"healthRuleEventTypes": [
+								"HEALTH_RULE_OPEN_WARNING",
+								"HEALTH_RULE_OPEN_CRITICAL",
+								"HEALTH_RULE_CONTINUES_CRITICAL",
+								"HEALTH_RULE_CLOSE_CRITICAL",
+								"HEALTH_RULE_CLOSE_WARNING",
+								"HEALTH_RULE_CANCELED_CRITICAL",
+								"HEALTH_RULE_CANCELED_WARNING"
+								],
+								"healthRuleScope": {
+									"healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+									"healthRules": [
+										"CPU utilization is too high-A Cisco default health rule"
+										]
+								}
+						},
+						"otherEvents": [],
+						"anomalyEvents": null,
+						"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "JVM Down - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": null,
+						"otherEvents": [
+							"APPLICATION_CRASH"
+							],
+							"anomalyEvents": null,
+							"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "JVM Garbage Collection Time is too high - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": {
+							"healthRuleEventTypes": [
+								"HEALTH_RULE_OPEN_WARNING",
+								"HEALTH_RULE_OPEN_CRITICAL",
+								"HEALTH_RULE_CONTINUES_CRITICAL",
+								"HEALTH_RULE_CLOSE_CRITICAL",
+								"HEALTH_RULE_CLOSE_WARNING",
+								"HEALTH_RULE_CANCELED_CRITICAL",
+								"HEALTH_RULE_CANCELED_WARNING"
+								],
+								"healthRuleScope": {
+									"healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+									"healthRules": [
+										"JVM Garbage Collection Time is too high-A Cisco default health rule"
+										]
+								}
+						},
+						"otherEvents": [],
+						"anomalyEvents": null,
+						"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "JVM Heap and GC Time is too high - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": {
+							"healthRuleEventTypes": [
+								"HEALTH_RULE_OPEN_WARNING",
+								"HEALTH_RULE_OPEN_CRITICAL",
+								"HEALTH_RULE_CONTINUES_CRITICAL",
+								"HEALTH_RULE_CLOSE_CRITICAL",
+								"HEALTH_RULE_CLOSE_WARNING",
+								"HEALTH_RULE_CANCELED_CRITICAL",
+								"HEALTH_RULE_CANCELED_WARNING"
+								],
+								"healthRuleScope": {
+									"healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+									"healthRules": [
+										"JVM Heap and GC Time is too high-A Cisco default health rule"
+										]
+								}
+						},
+						"otherEvents": [],
+						"anomalyEvents": null,
+						"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			},
+			{
+
+				"name": "JVM Restart - A Cisco default alert",
+				"enabled": true,
+				"executeActionsInBatch": true,
+				"frequency": null,
+				"actions": [],
+					"events": {
+						"healthRuleEvents": null,
+						"otherEvents": [
+							"APP_SERVER_RESTART"
+							],
+							"anomalyEvents": null,
+							"customEvents": []
+					},
+					"selectedEntities": {
+						"selectedEntityType": "ANY_ENTITY"
+					}
+			}
+			]
+}

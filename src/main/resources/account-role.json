@@ -1,0 +1,608 @@
+{  
+  "name":"$ROLE_NAME$",
+  "nameUnique": true,  
+  "description": "This is Admin Role",
+  "readonly": false,
+  "permissions": [
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "ACCOUNT",
+        "entityId": 0
+      },
+      "action": "VIEW_BUSINESS_FLOW",
+      "allowed": true
+    },
+    {     
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_ACTIONS",
+      "allowed": false
+    },
+    {    
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_AGENT_OPERATIONS",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_AGENT_PROPERTIES",
+      "allowed": false
+    },
+    {     
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_BACKEND_DETECTION",
+      "allowed": false
+    },
+    {     
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_BASELINES",
+      "allowed": false
+    },
+    {     
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_BUSINESS_TRANSACTIONS",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_CALLGRAPH_SETTINGS",
+      "allowed": false
+    },
+    {     
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_DIAGNOSTIC_DATA_COLLECTORS",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_ERROR_DETECTION",
+      "allowed": false
+    },
+    {    
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_EUM",
+      "allowed": false
+    },
+    {    
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_EVENT_REACTOR",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_INFO_POINTS",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_JMX",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_MEMORY_MONITORING",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_POLICIES",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_SERVICE_ENDPOINTS",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_SIM",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_SQL_BIND_VARIABLES",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_TRANSACTION_DETECTION",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CONFIG_TRIGGER_DIAGNOSTIC_SESSION",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "CREATE_EVENTS",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "DELETE",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "ENABLE_DEVELOPMENT_MODE",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "ENABLE_JMX_OPERATIONS",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "MANAGE_CUSTOM_DASHBOARD_TEMPLATES",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "NETVIZ_AGENT_PCAP_TRIGGER",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "VIEW",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "VIEW_SENSITIVE_DATA",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": 0
+      },
+      "action": "VIEW_SIM",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "DASHBOARD",
+        "entityId": 209
+      },
+      "action": "DELETE",
+      "allowed": false
+    },
+    {      
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "DASHBOARD",
+        "entityId": 209
+      },
+      "action": "EDIT",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "DASHBOARD",
+        "entityId": 209
+      },
+      "action": "VIEW",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_ACTIONS",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_AGENT_OPERATIONS",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_AGENT_PROPERTIES",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_BACKEND_DETECTION",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_BASELINES",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_BUSINESS_TRANSACTIONS",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_CALLGRAPH_SETTINGS",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_DIAGNOSTIC_DATA_COLLECTORS",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_ERROR_DETECTION",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_EUM",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_EVENT_REACTOR",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_INFO_POINTS",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_JMX",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_MEMORY_MONITORING",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_POLICIES",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_SERVICE_ENDPOINTS",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_SQL_BIND_VARIABLES",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_TRANSACTION_DETECTION",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CONFIG_TRIGGER_DIAGNOSTIC_SESSION",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "CREATE_EVENTS",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "DELETE",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "ENABLE_DEVELOPMENT_MODE",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "ENABLE_JMX_OPERATIONS",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "MANAGE_CUSTOM_DASHBOARD_TEMPLATES",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "NETVIZ_AGENT_PCAP_TRIGGER",
+      "allowed": false
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "VIEW",
+      "allowed": true
+    },
+    {
+      "affectedEntity": {
+        "id": 0,
+        "version": 0,
+        "entityType": "APPLICATION",
+        "entityId": $APPLICATION_ID$
+      },
+      "action": "VIEW_SENSITIVE_DATA",
+      "allowed": false
+    }
+  ]
+}
