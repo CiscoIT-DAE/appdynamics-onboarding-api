@@ -21,7 +21,7 @@ import com.cisco.maas.util.Constants;
 
 /**
  * This class contains methods to create, update , delete applications.
- * */
+ */
 @Service
 @Qualifier("DBHandler")
 public class DBHandler extends AppDOnboardingRequestHandlerImpl {
@@ -43,8 +43,8 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 	DBOperationHandler operationHandler;
 
 	/**
-	 * This method is used to handle request based on given input.	 
-	 * @param request: AppDOnboardingRequest type request data.	 	
+	 * This method is used to handle request based on given input.
+	 * @param request: AppDOnboardingRequest type request data.
 	 * @throws AppDOnboardingException.
 	 * @returns
 	 */
@@ -74,7 +74,7 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 					res = this.updateApplication(request);
 				}
 
-			} 
+			}
 			if (res) {
 				this.setNextHandler(licenseUsageCheckHandler);
 				super.handleRequestImpl(request);
@@ -92,12 +92,13 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 	}
 
 	/**
-	 * This method is used to create application with the given request data.	 
-	 * @param request: AppDOnboardingRequest type request data.	 	
+	 * This method is used to create application with the given request data.
+	 * 
+	 * @param request: AppDOnboardingRequest type request data.
 	 * @throws AppDOnboardingException.
 	 * @returns boolean
 	 */
-	
+
 	public boolean createApplication(AppDOnboardingRequest request) throws AppDOnboardingException {
 		try {
 			logger.info("createApplication - START");
@@ -111,11 +112,9 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 				if (res) {
 					operationCounter = 2;
 					request.getRetryDetails().setOperationCounter(operationCounter);
-				} else
-				{
+				} else {
 					logger.info("createApplication - END");
-					throw new AppDOnboardingException(
-							" persistAppDMetadata - Exception in createApplication", request);
+					throw new AppDOnboardingException(" persistAppDMetadata - Exception in createApplication", request);
 				}
 			}
 
@@ -138,23 +137,21 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 				request.getRetryDetails().setOperationCounter(0);
 				logger.info("createApplication - Ended Processing Request createApplication");
 				if (requestDao.updateRequest(request))
-				  return true;
-				
+					return true;
+
 			}
 			logger.info("createApplication - END");
-			throw new AppDOnboardingException(
-					"persistAppDMetadata - Exception while processing createApplication", request);
+			throw new AppDOnboardingException("persistAppDMetadata - Exception while processing createApplication",
+					request);
 		} catch (Exception e) {
 			logger.error("createApplication - ERROR");
-			throw new AppDOnboardingException(" createApplication - Exception " + e.getMessage(), request,
-					e);
+			throw new AppDOnboardingException(" createApplication - Exception " + e.getMessage(), request, e);
 		}
 	}
-	
-	
+
 	/**
-	 * This method is used to update application with the given request data.	 
-	 * @param request: AppDOnboardingRequest type request data.	 	
+	 * This method is used to update application with the given request data.
+	 * @param request: AppDOnboardingRequest type request data.
 	 * @throws AppDOnboardingException.
 	 * @returns boolean
 	 */
@@ -165,7 +162,7 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 			request = requestHandler.getUpdatedRequest(request);
 			String ctrlName = request.getRequestDetails().getCtrlName();
 			int operationCounter = request.getRetryDetails().getOperationCounter();
-			
+
 			boolean checkStatus = operationHandler
 					.checkIfEUMApplicationNotExist(request.getRequestDetails().getDeleteEumpApps(), ctrlName);
 			logger.info("updateApplication - eum validation status {}", checkStatus);
@@ -176,9 +173,12 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 				if (operationCounter == 6) {
 					request.setRequestStatus(Constants.VALIDATION_RESULT_SUCCESS);
 					request.setOperationalStatus(Constants.OPERATIONAL_STATUS_ACTIVE);
+					request.getRetryDetails().setOperationCounter(0);
+					request.getRetryDetails().setFailureModule(null);
 					request.setRetryLock(false);
 					if (requestDao.updateRequest(request))
 						return true;
+
 				}
 				logger.info("updateApplication - checkStatus is not empty - END");
 
@@ -188,17 +188,13 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 				request.setRequestStatus(Constants.REQUEST_STATUS_FAILED);
 				request.setRetryLock(false);
 				request.getRetryDetails().setFailureModule(Constants.DB_HANDLER);
-				if (requestDao.updateRequest(request))
-				{
+				if (requestDao.updateRequest(request)) {
 					logger.info("updateApplication - update request is true -  END");
 					return false;
-				}
-				else
-				{
+				} else {
 					logger.info("updateApplication - update request is false -  END");
 					throw new AppDOnboardingException(
-							" Exception in updateApplication while updating failed Status to Request",
-							request);
+							" Exception in updateApplication while updating failed Status to Request", request);
 				}
 			}
 		} catch (AppDOnboardingException e) {
@@ -207,10 +203,9 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 		}
 	}
 
-	
 	/**
-	 * This method is used to update operations with the given request data.	 
-	 * @param request: AppDOnboardingRequest type request data.	 	
+	 * This method is used to update operations with the given request data.
+	 * @param request: AppDOnboardingRequest type request data.
 	 * @param operationCounter: int type operation counter.
 	 * @throws AppDOnboardingException.
 	 * @returns boolean
@@ -223,11 +218,9 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 			if (res) {
 				operationCounter = 2;
 				request.getRetryDetails().setOperationCounter(operationCounter);
-			} else
-			{
+			} else {
 				logger.info("firstUpdateOperations - END");
-				throw new AppDOnboardingException("updateApplication - updateAppDMetadata - Exception",
-						request);
+				throw new AppDOnboardingException("updateApplication - updateAppDMetadata - Exception", request);
 			}
 		}
 
@@ -249,6 +242,7 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 		}
 
 		if (operationCounter == 5) {
+
 			AppDOnboardingRequest tempRequest = requestDao.findByProjectIdAndOpStatus(request.getAppdExternalId(),
 					Constants.OPERATIONAL_STATUS_ACTIVE);
 			tempRequest.setOperationalStatus(Constants.OPERATIONAL_STATUS_INACTIVE);
@@ -261,10 +255,10 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 		logger.info("firstUpdateOperations - END");
 		return request;
 	}
-	
+
 	/**
-	 * This method is used to update resource move application.	 
-	 * @param request: AppDOnboardingRequest type request data.	 		 
+	 * This method is used to update resource move application.
+	 * @param request: AppDOnboardingRequest type request data.
 	 * @throws AppDOnboardingException.
 	 * @returns boolean
 	 */
@@ -302,8 +296,7 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 				}
 			}
 			logger.info(" resourceMoveUpdateApplication - END");
-			throw new AppDOnboardingException(" Exception in Processing resourceMoveUpdateApplication",
-					request);
+			throw new AppDOnboardingException(" Exception in Processing resourceMoveUpdateApplication", request);
 
 		} catch (AppDOnboardingException e) {
 			logger.error("resourceMoveUpdateApplication - ERROR");
@@ -312,9 +305,9 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 	}
 
 	/**
-	 * This method is used to set of operations for move application.	 
-	 * @param request: AppDOnboardingRequest type request data.	 
-	 * @param operationCounter: int type counter.	 
+	 * This method is used to set of operations for move application.
+	 * @param request:AppDOnboardingRequest type request data.
+	 * @param operationCounter: int type counter.
 	 * @throws AppDOnboardingException.
 	 * @returns AppDOnboardingRequest
 	 */
@@ -386,36 +379,38 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 		logger.info("resourceMoveUpdateEUMMetaData - END");
 		return true;
 	}
-	
+
 	/**
-	 * This method is used to update role mappings.	  
-	 * @param oldAppName: String type old application name.	 
+	 * This method is used to update role mappings.
+	 * 
+	 * @param oldAppName: String type old application name.
 	 * @param newAppName: String type new application name.
-	 * @param appdProjectId: String type appd project id.	
+	 * @param appdProjectId: String type appd project id.
 	 * @param ctrlName: String type controller name.
-	 * @param eumApps: list type eum apps.	
+	 * @param eumApps: list type eum apps.
 	 * @returns boolean
 	 */
 	public boolean resourceMoveUpdateRoleMapping(String oldAppName, String newAppName, String ctrlName,
-			List<String> eumApps)  {
-		    logger.info(" resourceMoveUpdateRoleMapping - START");
-			roleMappingDAO.resourceMoveUpdate(oldAppName, newAppName, ctrlName);
-			if (eumApps != null) {
-				for (String eumName : eumApps) {
-					String newEUMName = eumName.replace(oldAppName, newAppName);
-					roleMappingDAO.resourceMoveUpdate(eumName, newEUMName, ctrlName);
-				}
+			List<String> eumApps) {
+		logger.info(" resourceMoveUpdateRoleMapping - START");
+		roleMappingDAO.resourceMoveUpdate(oldAppName, newAppName, ctrlName);
+		if (eumApps != null) {
+			for (String eumName : eumApps) {
+				String newEUMName = eumName.replace(oldAppName, newAppName);
+				roleMappingDAO.resourceMoveUpdate(eumName, newEUMName, ctrlName);
 			}
-			logger.info("resourceMoveUpdateRoleMapping - END");
-			return true;
-		
+		}
+		logger.info("resourceMoveUpdateRoleMapping - END");
+		return true;
+
 	}
-	
+
 	/**
-	 * This method is used to modify app name.	 
-	 * @param mappingList : List type of mapping list. 
-	 * @param oldAppName: String type old application name.	 
-	 * @param newAppName: String type new application name.	 	
+	 * This method is used to modify app name.
+	 * 
+	 * @param mappingList: List type of mapping list.
+	 * @param oldAppName: String type old application name.
+	 * @param newAppName: String type new application name.
 	 * @returns List
 	 */
 	public List<RoleMapping> modifyAppName(List<RoleMapping> mappingList, String oldAppName, String newAppName) {

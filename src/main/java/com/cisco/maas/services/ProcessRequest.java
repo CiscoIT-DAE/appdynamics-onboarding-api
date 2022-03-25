@@ -106,7 +106,7 @@ public class ProcessRequest {
 					appDUserHandler.handleRequest(request);
 				}
 				else if (updateCounter == 6) {
-					logger.info("asyncProcessUpdateRequest - updateCounter is 6T - END");
+					logger.info("asyncProcessUpdateRequest - updateCounter is 6 - END");
 					appDApplicationCreationHandler.handleRequest(request);
 				}
 			} else if (Constants.REQUEST_STATUS_FAILED.equals(request.getRequestStatus())) {

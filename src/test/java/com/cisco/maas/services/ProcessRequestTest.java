@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -33,7 +32,7 @@ public class ProcessRequestTest {
 	@Mock
 	APPDMasterDAO appDMasterDao;
 	@Mock
-	AppDUserHandler cgHandler;
+	AppDUserHandler appDUserHandler;
 	@Mock
 	AppDLicensesHandler licenseHandler;
 	@Mock
@@ -61,7 +60,7 @@ public class ProcessRequestTest {
 		RequestDetails rqDetails = new RequestDetails();
 		rqDetails.setTrackingId("1234");
 		request.setRequestDetails(rqDetails);
-		Mockito.doNothing().when(cgHandler).handleRequest(any(AppDOnboardingRequest.class));
+		Mockito.doNothing().when(appDUserHandler).handleRequest(any(AppDOnboardingRequest.class));
 		pr.asyncProcessRequest(request);
 		verify(pr, times(1)).asyncProcessRequest(request);
 
@@ -108,7 +107,7 @@ public class ProcessRequestTest {
 		request.setRequestDetails(rqDetails);
 		request.setRequestType("create");
 		request.setRequestStatus("pending");
-		Mockito.doThrow(new AppDOnboardingException("")).when(cgHandler)
+		Mockito.doThrow(new AppDOnboardingException("")).when(appDUserHandler)
 				.handleRequest(any(AppDOnboardingRequest.class));
 		Mockito.doNothing().when(pr).errorHandler(any(Exception.class), any(AppDOnboardingRequest.class));
 		pr.asyncProcessRequest(request);
@@ -175,7 +174,7 @@ public class ProcessRequestTest {
 		request.setRequestType("update");
 		request.setRequestStatus("pending");
 		Mockito.doReturn(4).when(pr).handleUpdate(any(AppDOnboardingRequest.class));
-		Mockito.doNothing().when(cgHandler).handleRequest(any(AppDOnboardingRequest.class));
+		Mockito.doNothing().when(appDUserHandler).handleRequest(any(AppDOnboardingRequest.class));
 		Mockito.doReturn(request).when(pr).initializeUpdateRequest(request);
 		pr.asyncProcessUpdateRequest(request);
 		verify(pr, times(1)).asyncProcessUpdateRequest(request);
@@ -235,7 +234,7 @@ public class ProcessRequestTest {
 	}
 
 	@Test
-	public void asyncProcessUpdateRequest_exception() throws Exception {
+	public void asyncProcessUpdateRequestException() throws Exception {
 		AppDOnboardingRequest request = new AppDOnboardingRequest();
 		RequestDetails rqDetails = new RequestDetails();
 		rqDetails.setTrackingId("1234");
@@ -243,9 +242,26 @@ public class ProcessRequestTest {
 		request.setRequestType("update");
 		request.setRequestStatus("pending");
 		Mockito.doReturn(4).when(pr).handleUpdate(any(AppDOnboardingRequest.class));
-		Mockito.doThrow(new AppDOnboardingException("")).when(cgHandler)
+		Mockito.doThrow(new AppDOnboardingException("")).when(appDUserHandler)
 				.handleRequest(any(AppDOnboardingRequest.class));
 		Mockito.doNothing().when(pr).errorHandler(any(Exception.class), any(AppDOnboardingRequest.class));
+		Mockito.doReturn(request).when(pr).initializeUpdateRequest(request);
+		pr.asyncProcessUpdateRequest(request);
+		verify(pr, times(1)).asyncProcessUpdateRequest(request);
+
+	}
+	@Test
+	public void asyncProcessUpdateRequestTestCounter6() throws Exception {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		RequestDetails rqDetails = new RequestDetails();
+		rqDetails.setTrackingId("1234");
+		request.setRequestDetails(rqDetails);
+		request.setRequestType("update");
+		request.setRequestStatus("pending");
+		request.getRequestDetails().setAdminUsers("admin");
+		request.getRequestDetails().setViewUsers("view");
+		Mockito.doReturn(6).when(pr).handleUpdate(any(AppDOnboardingRequest.class));
+		Mockito.doNothing().when(dBHandler).handleRequest(any(AppDOnboardingRequest.class));
 		Mockito.doReturn(request).when(pr).initializeUpdateRequest(request);
 		pr.asyncProcessUpdateRequest(request);
 		verify(pr, times(1)).asyncProcessUpdateRequest(request);
@@ -298,12 +314,41 @@ public class ProcessRequestTest {
 		request.setRequestDetails(requestDetails);
 		assertEquals(0, pr.handleUpdate(request));
 	}
+	@Test
+	public void handleUpdateTestCounter6() throws Exception {
 
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAdminUsers("xyz");
+		requestDetails.setViewUsers("abc");
+		request.setRequestDetails(requestDetails);
+		assertEquals(4, pr.handleUpdate(request));
+	}
+	@Test
+	public void handleUpdateTestADdminViewNull() throws Exception {
+
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAdminUsers(null);
+		requestDetails.setViewUsers(null);
+		request.setRequestDetails(requestDetails);
+		assertEquals(0, pr.handleUpdate(request));
+	}
+	@Test
+	public void handleUpdateTestAdminNull() throws Exception {
+
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAdminUsers(null);
+		requestDetails.setViewUsers("xyz");
+		request.setRequestDetails(requestDetails);
+		assertEquals(4, pr.handleUpdate(request));
+	}
 	@Test
 	public void retryMapTest() throws Exception {
 
 		AppDOnboardingRequest request = new AppDOnboardingRequest();
-		Mockito.doNothing().when(cgHandler).handleRequest(request);
+		Mockito.doNothing().when(appDUserHandler).handleRequest(request);
 		Mockito.doNothing().when(licenseHandler).handleRequest(request);
 		Mockito.doNothing().when(alertHandler).handleRequest(request);
 		Mockito.doNothing().when(appDApplicationCreationHandler).handleRequest(request);
@@ -391,5 +436,18 @@ public class ProcessRequestTest {
 		Mockito.doNothing().when(dBHandler).handleRequest(any(AppDOnboardingRequest.class));
 		pr.errorHandler(ce, request);
 	}
-
+	
+	@Test(expected=AppDOnboardingException.class)
+	public void  initializeUpdateRequestException() throws AppDOnboardingException {
+		
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setAppdExternalId("123");
+		request.setRequestType("create");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setTrackingId("");
+		request.setRequestDetails(requestDetails);
+		Mockito.doReturn(request).when(requestDao).findByExternalIdAndRequestType("123", "create");	 
+		pr.initializeUpdateRequest(request);
+		 
+	}
 }

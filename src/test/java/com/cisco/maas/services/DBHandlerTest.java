@@ -131,6 +131,14 @@ public class DBHandlerTest {
 		Mockito.doNothing().when(dBHandler).handleRequestImpl(any(AppDOnboardingRequest.class));
 		dBHandler.handleRequest(request);
 	}
+	@Test(expected = AppDOnboardingException.class)
+	public void handleRequestTestException() throws Exception {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestStatus("failed");
+		Mockito.doThrow(AppDOnboardingException.class).when(dBHandler).checkRequestType(request);
+		dBHandler.handleRequest(request);
+	}
+
 
 	@Test
 	public void createApplicationTest() throws Exception {

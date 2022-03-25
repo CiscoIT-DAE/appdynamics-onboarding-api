@@ -43,7 +43,6 @@ public class RequestDAOImpl implements RequestDAO {
 				logger.info("create :: Setting the Request Counter to {}",
 						IterableUtils.size(requestList) + 1);
 			}
-
 			mongoTemplate.save(request);
 			logger.info("create :: End create()");
 			return true;
@@ -66,7 +65,7 @@ public class RequestDAOImpl implements RequestDAO {
 			Query query = new Query(
 					Criteria.where(Constants.REQUEST_ID).is(request.getRequestDetails().getTrackingId()));
 			AppDOnboardingRequest tempRequest = mongoTemplate.findOne(query, AppDOnboardingRequest.class);
-
+            
 			if (tempRequest != null) {
 				tempRequest = this.prepareUpdateRequest(request, tempRequest);
 				mongoTemplate.save(tempRequest);
@@ -146,14 +145,20 @@ public class RequestDAOImpl implements RequestDAO {
 			tempRequest.getRequestDetails().setOldAppGroupName(request.getRequestDetails().getOldAppGroupName());
 			tempRequest.getRequestDetails().setEumApps(request.getRequestDetails().getEumApps());
 		}
+		if(Constants.REQUEST_TYPE_UPDATE.equals(request.getRequestType())&&(Constants.VALIDATION_RESULT_SUCCESS).equals(request.getRequestStatus()))
+			tempRequest.setOperationalStatus(request.getOperationalStatus());
+		
 		tempRequest.setRequestStatus(request.getRequestStatus());
 		tempRequest.setRequestType(request.getRequestType());
 		tempRequest.setRetryCount(request.getRetryCount());
 		tempRequest.setRetryLock(request.isRetryLock());
 		tempRequest.setResourceMove(request.isResourceMove());
 		tempRequest.setRollbackCounter(request.getRollbackCounter());
+   
 		if (!Constants.REQUEST_TYPE_UPDATE.equals(request.getRequestType()))
 			tempRequest.setOperationalStatus(request.getOperationalStatus());
+			
+			
 
 		return tempRequest;
 	}

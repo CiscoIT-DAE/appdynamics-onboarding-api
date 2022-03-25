@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import com.cisco.maas.dto.LicenseRule;
 import com.cisco.maas.dto.AppDOnboardingRequest;
-import com.cisco.maas.dto.RetryDetails;
 import com.cisco.maas.exception.AppDOnboardingException;
 import com.cisco.maas.util.AppDynamicsUtil;
 import com.cisco.maas.util.Constants;
@@ -75,7 +74,6 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 	public void handleRequest(AppDOnboardingRequest request) throws AppDOnboardingException {
 		logger.info("handleRequest - START");
 		request.getRetryDetails().setFailureModule(FAILUREMODULE);
-
 		if (Constants.REQUEST_TYPE_CREATE.equals(request.getRequestType())) {
 			logger.info("handleRequest - Processing Request in Create Type");
 			String licenseKey = this.createLicenseRule(request);
@@ -104,19 +102,7 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 					logger.info("handleRequest - update - resource is not moved -  END");
 				}
 			}
-		} else if (Constants.REQUEST_TYPE_DELETE.equals(request.getRequestType())) {
-			logger.info("handleRequest - Processing Request in Delete Type");
-			boolean result = this.deleteLicenses(request);
-			if (result) {
-				logger.info("handleRequest - Delete Request Processing Successful Calling DB Handler");
-				RetryDetails rDetails = new RetryDetails();
-				rDetails.setOperationCounter(1);
-				request.setRetryDetails(rDetails);
-				this.setNextHandler(dbHandler);
-				super.handleRequestImpl(request);
-				logger.info("handleRequest -  delete - END");
-			}
-		}
+		} 
 	}
 
 	

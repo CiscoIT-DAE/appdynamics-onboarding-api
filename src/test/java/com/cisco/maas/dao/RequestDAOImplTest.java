@@ -159,7 +159,7 @@ public class RequestDAOImplTest {
 	public void updateRequestTest() {
 		AppDOnboardingRequest request = new AppDOnboardingRequest();
 		RequestDetails requestDetails = new RequestDetails();
-		request.setRequestType("delete");
+		request.setRequestType("update");
 		request.setResourceMove(true);
 		requestDetails.setAppGroupName("APMApp");
 		requestDetails.setCtrlName("cisco1nonprod");
@@ -173,6 +173,42 @@ public class RequestDAOImplTest {
 		RetryDetails rdetails = new RetryDetails();
 		request.setRetryDetails(rdetails);
 		request.setRequestStatus("success");
+		request.setRequestType("update");
+		List<String> eumApps = new ArrayList<String>();
+		eumApps.add("EUM1");
+		requestDetails.setAddEumpApps(eumApps);
+		requestDetails.setDeleteEumpApps(eumApps);
+		requestDetails.setEumApps(eumApps);
+		requestDetails.setOldEumApps(eumApps);
+		requestDetails.setOldAppGroupName("APM-n");
+		requestDetails.setAlertAliases("test@cisco.com");
+		request.setRequestDetails(requestDetails);
+		request.setRollbackCounter(1);
+		Query query = new Query(
+				Criteria.where("requestDetails.trackingId").is(request.getRequestDetails().getTrackingId()));
+
+		when(mongoTemplate.findOne(query, AppDOnboardingRequest.class)).thenReturn(request);
+		when(mongoTemplate.save(any(AppDOnboardingRequest.class))).thenReturn(request);
+		requestDAOImpl.updateRequest(request);
+	}
+	@Test
+	public void updateRequestTestPending() {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		RequestDetails requestDetails = new RequestDetails();
+		request.setRequestType("update");
+		request.setResourceMove(true);
+		requestDetails.setAppGroupName("APMApp");
+		requestDetails.setCtrlName("cisco1nonprod");
+		List<RoleMapping> mappingList = new ArrayList<>();
+		RoleMapping mapping = new RoleMapping();
+		mapping.setAdminGroupName("admingroupname");
+		mappingList.add(mapping);
+		request.setMapping(mappingList);
+		request.setAppGroupID("app-123");
+		request.setLicenseKey("test-licensekey");
+		RetryDetails rdetails = new RetryDetails();
+		request.setRetryDetails(rdetails);
+		request.setRequestStatus("pending");
 		request.setRequestType("update");
 		List<String> eumApps = new ArrayList<String>();
 		eumApps.add("EUM1");
@@ -690,4 +726,5 @@ public class RequestDAOImplTest {
 		when(mongoTemplate.save(any(AppDOnboardingRequest.class))).thenReturn(request);
 		requestDAOImpl.updateCreateRequest(request);
 	}
+
 }

@@ -15,6 +15,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.springframework.http.HttpStatus;
+
 import com.cisco.maas.dao.APPDMasterDAO;
 import com.cisco.maas.dao.RequestDAO;
 import com.cisco.maas.dto.AppDError;
@@ -247,7 +249,7 @@ public class AppDOnboardingHandlerTest {
 		RequestDetails requestDetails=new RequestDetails();
 		requestDetails.setTrackingId("Test-123"); 
 		Mockito.doReturn(null).when(appDApplicationCreationHandler).getAppID(any(String.class), any(String.class));
-		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList,"create");
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
 		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class)); 
 		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class), any(ApplicationOnboardingRequest.class), any(String.class)) ;
 		when(requestHandler.validateRequest(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
@@ -276,7 +278,7 @@ public class AppDOnboardingHandlerTest {
 		RequestDetails requestDetails=new RequestDetails();
 		requestDetails.setTrackingId("Test-123"); 
 		Mockito.doReturn(null).when(appDApplicationCreationHandler).getAppID(any(String.class), any(String.class));
-		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList,"create");
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
 		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class)); 
 		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class),any(ApplicationOnboardingRequest.class), any(String.class));
 		when(requestHandler.validateRequest(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
@@ -304,12 +306,100 @@ public class AppDOnboardingHandlerTest {
 		RequestDetails requestDetails=new RequestDetails();
 		requestDetails.setTrackingId("Test-123"); 
 		Mockito.doReturn(null).when(appDApplicationCreationHandler).getAppID(any(String.class), any(String.class));
-		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList,"create");
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
 		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class)); 
 		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class),any(ApplicationOnboardingRequest.class), any(String.class)) ;
 		when(requestHandler.validateRequest(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
 		when(requestHandler.createRequest(any(AppDOnboardingRequest.class))).thenReturn(true);
 		Mockito.doNothing().when(pr).asyncProcessRequest(any(AppDOnboardingRequest.class));		
+		appDOnboardingHandler.createAppdynamics(rDetail);
+	}
+	
+	@Test
+	public void createAppdynamicsTest11() throws Exception {
+		ValidateResult validateResult=new ValidateResult();
+		validateResult.setValidateResultStatus("failure");
+		ApplicationOnboardingRequest rDetail =new ApplicationOnboardingRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		alertList.add("rpatta@cisco.com");
+		alertList.add("<script>");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setApmApplicationGroupName("Test-Apm");
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RequestDetails requestDetails=new RequestDetails();
+		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn(null).when(appDApplicationCreationHandler).getAppID(any(String.class), any(String.class));
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
+		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class)); 
+		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class),any(ApplicationOnboardingRequest.class), any(String.class)) ;
+		when(requestHandler.validateRequest(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
+		when(requestHandler.createRequest(any(AppDOnboardingRequest.class))).thenReturn(true);
+		Mockito.doNothing().when(pr).asyncProcessRequest(any(AppDOnboardingRequest.class));		
+		appDOnboardingHandler.createAppdynamics(rDetail);
+	}
+	
+	@Test
+	public void createAppdynamicsTest12() throws Exception {
+		ValidateResult validateResult=new ValidateResult();
+		validateResult.setValidateResultStatus("failure");
+		ApplicationOnboardingRequest rDetail =new ApplicationOnboardingRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		alertList.add("rpatta@cisco.com");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setApmApplicationGroupName("Test-Apm");
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RequestDetails requestDetails=new RequestDetails();
+		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn("123456").when(appDApplicationCreationHandler).getAppID(any(String.class), any(String.class));
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
+		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class)); 
+		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class),any(ApplicationOnboardingRequest.class), any(String.class)) ;
+		when(requestHandler.validateRequest(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
+		when(requestHandler.createRequest(any(AppDOnboardingRequest.class))).thenReturn(true);
+		Mockito.doNothing().when(pr).asyncProcessRequest(any(AppDOnboardingRequest.class));		
+		appDOnboardingHandler.createAppdynamics(rDetail);
+	}
+	
+	@Test
+	public void createAppdynamicsTest13() throws Exception {
+		ValidateResult validateResult=new ValidateResult();
+		validateResult.setValidateResultStatus("failure");
+		AppDError appdError = new AppDError();
+		appdError.setCode(500);
+		appdError.setMsg("failure");
+		validateResult.setErrorObject(appdError);
+		validateResult.setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR);
+		ApplicationOnboardingRequest rDetail =new ApplicationOnboardingRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		alertList.add("rpatta@cisco.com");
+		alertList.add("test@cisco.com");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setApmApplicationGroupName("Test-Apm");
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RequestDetails requestDetails=new RequestDetails();
+		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn(null).when(appDApplicationCreationHandler).getAppID(any(String.class), any(String.class));
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
+		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class)); 
+		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class),any(ApplicationOnboardingRequest.class), any(String.class));
+		when(requestHandler.validateRequest(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
+		when(requestHandler.createRequest(any(AppDOnboardingRequest.class))).thenReturn(true);
+		Mockito.doNothing().when(pr).asyncProcessRequest(any(AppDOnboardingRequest.class));
 		appDOnboardingHandler.createAppdynamics(rDetail);
 	}
 	
@@ -334,31 +424,43 @@ public class AppDOnboardingHandlerTest {
 	@Test
 	public void updateAppdynamicsTest1() throws Exception {
 		ValidateResult validateResult=new ValidateResult();
-		validateResult.setValidateResultStatus("failed");
-		AppDError errorObject = new AppDError();
-		errorObject.setCode(1);
-		errorObject.setMsg("error");
-		validateResult.setErrorObject(errorObject);
+		validateResult.setValidateResultStatus("success");
 		ApplicationOnboardingUpdateRequest rDetail =new ApplicationOnboardingUpdateRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
 		AppDOnboardingRequest request=new AppDOnboardingRequest();
 		RequestDetails requestDetails=new RequestDetails();
 		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
 		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class));
 		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class), any(ApplicationOnboardingRequest.class), any(String.class)) ;
 		when(requestHandler.validateUpdate(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
 		when(requestHandler.createRequest(any(AppDOnboardingRequest.class))).thenReturn(true);		
 		Mockito.doNothing().when(pr).asyncProcessUpdateRequest(any(AppDOnboardingRequest.class));
-		appDOnboardingHandler.updateAppdynamics(rDetail,"test123");
-		
+		appDOnboardingHandler.updateAppdynamics(rDetail,"test123");	
 	}
+	
 	@Test
 	public void updateAppdynamicsTest2() throws Exception {
 		ValidateResult validateResult=new ValidateResult();
 		validateResult.setValidateResultStatus("success");
 		ApplicationOnboardingUpdateRequest rDetail =new ApplicationOnboardingUpdateRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
 		AppDOnboardingRequest request=new AppDOnboardingRequest();
 		RequestDetails requestDetails=new RequestDetails();
 		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
 		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class)); 
 		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class), any(ApplicationOnboardingRequest.class), any(String.class)) ;
 		when(requestHandler.validateUpdate(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
@@ -374,7 +476,93 @@ public class AppDOnboardingHandlerTest {
 		ApplicationOnboardingUpdateRequest rDetail =new ApplicationOnboardingUpdateRequest();
 		RequestDetails requestDetails=new RequestDetails();
 		requestDetails.setTrackingId("Test-123"); 
-		Mockito.doReturn("Test").when(appDOnboardingHandler).validateEUMAndalertAliases(null,null,"create"); 
+		Mockito.doReturn("Test").when(appDOnboardingHandler).validateEUMAndalertAliases(null,null); 
+		appDOnboardingHandler.updateAppdynamics(rDetail,"test123");	
+	}
+	
+	@Test
+	public void updateAppdynamicsTest4() throws Exception {
+		ValidateResult validateResult=new ValidateResult();
+		validateResult.setValidateResultStatus("success");
+		ApplicationOnboardingUpdateRequest rDetail =new ApplicationOnboardingUpdateRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
+		RequestDetails requestDetails=new RequestDetails();
+		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn("Error").when(appDOnboardingHandler).validateEUMAndalertAliases(rDetail.getEumApplicationGroupNames(),rDetail.getAlertAliases()); 
+		appDOnboardingHandler.updateAppdynamics(rDetail,"test123");	
+	}
+	
+	@Test
+	public void updateAppdynamicsTest5() throws Exception {
+		ValidateResult validateResult=new ValidateResult();
+		validateResult.setValidateResultStatus("success");
+		ApplicationOnboardingUpdateRequest rDetail =new ApplicationOnboardingUpdateRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
+		RequestDetails requestDetails=new RequestDetails();
+		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn("Request is not Valid : EUM App name already exists"
+				).when(appDOnboardingHandler).validateEUMAndalertAliases(rDetail.getEumApplicationGroupNames(),rDetail.getAlertAliases()); 
+		appDOnboardingHandler.updateAppdynamics(rDetail,"test123");	
+	}
+	
+	@Test
+	public void updateAppdynamicsTest6() throws Exception {
+		ValidateResult validateResult=new ValidateResult();
+		validateResult.setValidateResultStatus("success");
+		ApplicationOnboardingUpdateRequest rDetail =new ApplicationOnboardingUpdateRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		alertList.add("<script>");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
+		RequestDetails requestDetails=new RequestDetails();
+		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(rDetail.getEumApplicationGroupNames(),rDetail.getAlertAliases()); 
+		appDOnboardingHandler.updateAppdynamics(rDetail,"test123");	
+	}
+	
+	@Test
+	public void updateAppdynamicsTest7() throws Exception {
+		ValidateResult validateResult=new ValidateResult();
+		validateResult.setValidateResultStatus("failure");
+		
+		AppDError errorObject = new AppDError();
+		errorObject.setCode(1);
+		errorObject.setMsg("error");
+		validateResult.setErrorObject(errorObject);
+		validateResult.setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR);
+		ApplicationOnboardingUpdateRequest rDetail =new ApplicationOnboardingUpdateRequest();
+		List<String> eumName = new ArrayList<>();
+		List<String> alertList = new ArrayList<>();
+		eumName.add("testEUM");
+		alertList.add("rgundewa@cisco.com");
+		rDetail.setEumApplicationGroupNames(eumName);
+		rDetail.setAlertAliases(alertList);
+		rDetail.setEumApplicationGroupNames(eumName);
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RequestDetails requestDetails=new RequestDetails();
+		requestDetails.setTrackingId("Test-123"); 
+		Mockito.doReturn(null).when(appDOnboardingHandler).validateEUMAndalertAliases(eumName, alertList);
+		Mockito.doReturn(request).when(appDOnboardingHandler).buildRequest(any(String.class));
+		Mockito.doReturn(requestDetails).when(appDOnboardingHandler).buildBodyForCreate(any(String.class), any(ApplicationOnboardingRequest.class), any(String.class)) ;
+		when(requestHandler.validateUpdate(any(AppDOnboardingRequest.class))).thenReturn(validateResult);
+		when(requestHandler.createRequest(any(AppDOnboardingRequest.class))).thenReturn(true);		
+		Mockito.doNothing().when(pr).asyncProcessUpdateRequest(any(AppDOnboardingRequest.class));
 		appDOnboardingHandler.updateAppdynamics(rDetail,"test123");	
 	}
 	
@@ -407,6 +595,10 @@ public class AppDOnboardingHandlerTest {
 		appDOnboardingHandler.viewAppdynamics("test");
 	}
 	
+	@Test
+	public void viewAppdynamicsTest7() throws Exception {
+		appDOnboardingHandler.viewAppdynamics("<script>");
+	}
 	
 	@Test
 	public void convertArrayToStringTest()
@@ -468,7 +660,7 @@ public class AppDOnboardingHandlerTest {
 		testData.add("test4");
 		testData.add("test5");
 		testData.add("test6");
-		appDOnboardingHandler.validateEUMAndalertAliases(testData,testData,"create");
+		appDOnboardingHandler.validateEUMAndalertAliases(testData,testData);
 	}
 	
 	@Test
@@ -480,7 +672,7 @@ public class AppDOnboardingHandlerTest {
 		testData.add("test2");
 		testData.add("test3");
 		testData.add("test4");
-		appDOnboardingHandler.validateEUMAndalertAliases(testData,testData,"create");
+		appDOnboardingHandler.validateEUMAndalertAliases(testData,testData);
 	}
 	@Test
 	public void validateEUMAndalertAliasesTest3() throws AppDOnboardingException
@@ -491,7 +683,7 @@ public class AppDOnboardingHandlerTest {
 		testData.add("Test1");
 		testData.add("test3");
 		testData.add("test4");
-		appDOnboardingHandler.validateEUMAndalertAliases(testData,null,"create");
+		appDOnboardingHandler.validateEUMAndalertAliases(testData,null);
 	}
 	@Test
 	public void validateEUMAndalertAliasesTest4() throws AppDOnboardingException
@@ -504,14 +696,14 @@ public class AppDOnboardingHandlerTest {
 		testData.add("test4");
 		testData.add("test5");
 		testData.add("test6");
-		appDOnboardingHandler.validateEUMAndalertAliases(testData,null,"create");
+		appDOnboardingHandler.validateEUMAndalertAliases(testData,null);
 	}
 	@Test
 	public void validateEUMAndalertAliasesTestNameExists() throws AppDOnboardingException
 	{   
 		Mockito.when(operationHandler.checkIfAPMApplicationNotExist(Mockito.anyString(), Mockito.anyString())).thenReturn(false);
 		
-		appDOnboardingHandler.validateEUMAndalertAliases(null,null,"create");
+		appDOnboardingHandler.validateEUMAndalertAliases(null,null);
 	}
 	
 	@Test

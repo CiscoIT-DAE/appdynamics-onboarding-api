@@ -72,8 +72,8 @@ public class AppDOnboardingHandler {
 	private static final String X_XSS_PROTECTION = "x-xss-protection";
 	private static final String X_FRAME_OPTIONS = "x-frame-options";
 	private static final String CONTENT_SECURITY_POLICY = "content-security-policy";
-	private static final String SET_COOKIE = "set-cookie"; 
-
+	private static final String SET_COOKIE = "set-cookie";
+	private static final String EUM_EXISTS_MSG = "Request is not Valid : EUM App name already exists";
 	@Autowired
 	ProcessRequest processRequest;
 	@Autowired
@@ -109,7 +109,8 @@ public class AppDOnboardingHandler {
 	 */
 	@PostMapping(produces = "application/json")
 	@Operation(summary = "Onboard Applications into AppDynamics Controller", description = "Create Application in AppDynamics Controller")
-	@Tags(value = { @Tag(name = "Service Assurance AppDynamics Onboarding API", description = "Service Assurance AppDynamics Onboarding API") })
+	@Tags(value = {
+			@Tag(name = "Service Assurance AppDynamics Onboarding API", description = "Service Assurance AppDynamics Onboarding API") })
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "202", description = "Accepted", content = @Content(schema = @Schema(implementation = ApplicationOnboardingResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {
 					@Header(name = "Location", description = "Location of the created resource", schema = @Schema(type = "string")),
@@ -132,7 +133,7 @@ public class AppDOnboardingHandler {
 					@Header(name = "Date", schema = @Schema(type = "string", pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")),
 					@Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string")),
 					@Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string")) }) })
-	public ResponseEntity<Object> createAppdynamics(@RequestBody ApplicationOnboardingRequest onboardingRequest){
+	public ResponseEntity<Object> createAppdynamics(@RequestBody ApplicationOnboardingRequest onboardingRequest) {
 		ValidateResult validateResult;
 		String validationErrorMessage;
 		boolean createResult = false;
@@ -143,28 +144,26 @@ public class AppDOnboardingHandler {
 
 		try {
 			validationErrorMessage = this.validateEUMAndalertAliases(onboardingRequest.getEumApplicationGroupNames(),
-					onboardingRequest.getAlertAliases(), Constants.REQUEST_TYPE_CREATE);
+					onboardingRequest.getAlertAliases());
 
-			if (validationErrorMessage != null || 
-					!XSSValidationUtil.xSSAttackValidation(onboardingRequest.toString()+onboardingRequest.getAlertAliases().toString())) {
+			if (validationErrorMessage != null || !XSSValidationUtil.xSSAttackValidation(
+					onboardingRequest.toString() + onboardingRequest.getAlertAliases().toString())) {
 				ApplicationOnboardingError appError = new ApplicationOnboardingError();
 				appError.setCode(HttpStatus.BAD_REQUEST.name());
-				if(validationErrorMessage != null)
-				{    
+				if (validationErrorMessage != null) {
 					appError.setMessage(validationErrorMessage);
-					if(validationErrorMessage.equals("Request is not Valid : EUM App name already exists"))
-						{appError.setCode(HttpStatus.CONFLICT.name());
+					if ((EUM_EXISTS_MSG).equals(validationErrorMessage)) {
+						appError.setCode(HttpStatus.CONFLICT.name());
 						return new ResponseEntity<>(appError, httpHeaders, HttpStatus.CONFLICT);
-						}
-					
-				}
-				else {
+					}
+
+				} else {
 					logger.info("createAppdynamics - Request type validation failed");
 					appError.setMessage("Bad request type for create");
-				} 
+				}
 				return new ResponseEntity<>(appError, httpHeaders, HttpStatus.BAD_REQUEST);
 			}
-			
+
 			if (appDApplicationCreationHandler.getAppID(controller,
 					onboardingRequest.getApmApplicationGroupName()) != null) {
 				ApplicationOnboardingError appError = new ApplicationOnboardingError();
@@ -172,10 +171,11 @@ public class AppDOnboardingHandler {
 				appError.setMessage("Application Already Exists on Controller");
 				return new ResponseEntity<>(appError, httpHeaders, HttpStatus.CONFLICT);
 			}
-			
+
 			AppDOnboardingRequest request = this.buildRequest(Constants.REQUEST_TYPE_CREATE);
 			logger.info("createAppdynamics - Started Processing Create Request");
-			RequestDetails rDetails = this.buildBodyForCreate(trackingId, onboardingRequest, "");
+			RequestDetails rDetails = this.buildBodyForCreate(trackingId, onboardingRequest,
+					request.getAppdExternalId());
 			request.setRequestDetails(rDetails);
 			validateResult = requestHandler.validateRequest(request);
 			logger.info("createAppdynamics - Printing Validated Result :: {}", validateResult);
@@ -201,7 +201,7 @@ public class AppDOnboardingHandler {
 
 			} else {
 				logger.info("createAppdynamics - Validation of Create Request Failed");
-				ApplicationOnboardingError appError =this.failedValidation(validateResult);
+				ApplicationOnboardingError appError = this.failedValidation(validateResult);
 				return new ResponseEntity<>(appError, httpHeaders, validateResult.getResponseCode());
 			}
 		} catch (Exception error) {
@@ -247,8 +247,9 @@ public class AppDOnboardingHandler {
 	@Parameter(name = "id", description = "Application Id")
 	@PatchMapping(path = "/{id}", produces = "application/json")
 	public @ResponseBody ResponseEntity<Object> updateAppdynamics(
-			@RequestBody ApplicationOnboardingUpdateRequest onboardingRequest, @PathVariable("id") String appdProjectId) {
-		
+			@RequestBody ApplicationOnboardingUpdateRequest onboardingRequest,
+			@PathVariable("id") String appdProjectId) {
+
 		ValidateResult validateResult;
 		String validationErrorMessage;
 		boolean updateResult = false;
@@ -265,17 +266,23 @@ public class AppDOnboardingHandler {
 
 		try {
 			validationErrorMessage = this.validateEUMAndalertAliases(onboardingRequest.getEumApplicationGroupNames(),
-					onboardingRequest.getAlertAliases(), Constants.REQUEST_TYPE_UPDATE);
+					onboardingRequest.getAlertAliases());
 
-			if (validationErrorMessage != null || !XSSValidationUtil.xSSAttackValidation(appdProjectId) || 
-					!XSSValidationUtil.xSSAttackValidation(onboardingRequest.toString()+onboardingRequest.getAlertAliases().toString())) {
+			if (validationErrorMessage != null || !XSSValidationUtil.xSSAttackValidation(appdProjectId)
+					|| (onboardingRequest.getAlertAliases() != null && !XSSValidationUtil.xSSAttackValidation(
+							onboardingRequest.toString() + onboardingRequest.getAlertAliases().toString()))) {
 				ApplicationOnboardingError appError = new ApplicationOnboardingError();
 				appError.setCode(HttpStatus.BAD_REQUEST.name());
-				if(validationErrorMessage != null)
+				if (validationErrorMessage != null) {
 					appError.setMessage(validationErrorMessage);
-				else {
-					logger.info("updateAppdynamics - Request type validation failed");
+					if ((EUM_EXISTS_MSG).equals(validationErrorMessage)) {
+						logger.info("updateAppdynamics - Request type validation failed");
+						appError.setCode(HttpStatus.CONFLICT.name());
+						return new ResponseEntity<>(appError, httpHeaders, HttpStatus.CONFLICT);
+					}
+				} else {
 					appError.setMessage("Bad request type for update");
+					logger.info("updateAppdynamics - Request type validation failed");
 				}
 				return new ResponseEntity<>(appError, httpHeaders, HttpStatus.BAD_REQUEST);
 			}
@@ -287,15 +294,12 @@ public class AppDOnboardingHandler {
 
 			logger.info("updateAppdynamics - Validating Update Request");
 			validateResult = requestHandler.validateUpdate(request);
-			logger.info("updateAppdynamics - Printing Validated Result {}",
-					validateResult);
+			logger.info("updateAppdynamics - Printing Validated Result {}", validateResult);
 			if (Constants.VALIDATION_RESULT_SUCCESS.equals(validateResult.getValidateResultStatus())) {
-				logger.info("updateAppdynamics - Resource Move Result {}",
-						validateResult.isResourceMoveFlag());
+				logger.info("updateAppdynamics - Resource Move Result {}", validateResult.isResourceMoveFlag());
 				request.setResourceMove(validateResult.isResourceMoveFlag());
 
-				logger.info(
-						" updateAppdynamics - Persisting Request to Database");
+				logger.info(" updateAppdynamics - Persisting Request to Database");
 				updateResult = requestHandler.createRequest(request);
 
 				if (updateResult) {
@@ -308,17 +312,15 @@ public class AppDOnboardingHandler {
 					return new ResponseEntity<>(applicationOnboardingResponse, httpHeaders,
 							validateResult.getResponseCode());
 				} else {
-					
-					logger.info(
-							"updateAppdynamics - Persisting Request to Database Failed");
+
+					logger.info("updateAppdynamics - Persisting Request to Database Failed");
 					ApplicationOnboardingError appError = this.failedPersistance();
 					return new ResponseEntity<>(appError, httpHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 
 			} else {
-				logger.info(
-						"updatAppdynamics - Validation of Request failed");
-				ApplicationOnboardingError appError =this.failedValidation(validateResult);
+				logger.info("updatAppdynamics - Validation of Request failed");
+				ApplicationOnboardingError appError = this.failedValidation(validateResult);
 				return new ResponseEntity<>(appError, httpHeaders, validateResult.getResponseCode());
 			}
 		} catch (Exception e) {
@@ -337,53 +339,62 @@ public class AppDOnboardingHandler {
 	 * @param appdExternalId - Payload for application view
 	 * @return - HttpResponse
 	 */
-	@Operation(summary = "Get the Onboarded Applications Details in AppDynamics Controller",  description = "Get Application Details from AppDynamics Controller")
-	@Tags(value = {@Tag(name = "Service Assurance AppDynamics Onboarding API", description= "Service Assurance AppDynamics Onboarding API")})
-	@ApiResponses( value= {
-			@ApiResponse(responseCode = "200",description = "OK", content = @Content(schema = @Schema(implementation = ApplicationOnboardingResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {@Header(name = "Location", description = "Location of the created resource", schema = @Schema(type = "string")),@Header(name = "Date", schema = @Schema(type = "string" , pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")), @Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string")),  @Header(name = "Link", description = "Link", schema = @Schema(type = "string" )),  @Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string" )) }),
-			@ApiResponse(responseCode = "404",description = "Not Found", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {@Header(name = "Date", schema = @Schema(type = "string" , pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")), @Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string" )), @Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string" ))}),
-			@ApiResponse(responseCode = "400",description = "Bad Request", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {@Header(name = "Date", schema = @Schema(type = "string" , pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")), @Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string" )), @Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string" ))}),
-			@ApiResponse(responseCode = "500",description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {@Header(name = "Date", schema = @Schema(type = "string" , pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")), @Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string" )), @Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string" )) }),
-			@ApiResponse(responseCode = "default",description = "Unexpected error", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {@Header(name = "Date", schema = @Schema(type = "string" , pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")), @Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string" )), @Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string" )) })
-	})
+	@Operation(summary = "Get the Onboarded Applications Details in AppDynamics Controller", description = "Get Application Details from AppDynamics Controller")
+	@Tags(value = {
+			@Tag(name = "Service Assurance AppDynamics Onboarding API", description = "Service Assurance AppDynamics Onboarding API") })
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = ApplicationOnboardingResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {
+					@Header(name = "Location", description = "Location of the created resource", schema = @Schema(type = "string")),
+					@Header(name = "Date", schema = @Schema(type = "string", pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")),
+					@Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string")),
+					@Header(name = "Link", description = "Link", schema = @Schema(type = "string")),
+					@Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string")) }),
+			@ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {
+					@Header(name = "Date", schema = @Schema(type = "string", pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")),
+					@Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string")),
+					@Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string")) }),
+			@ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {
+					@Header(name = "Date", schema = @Schema(type = "string", pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")),
+					@Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string")),
+					@Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string")) }),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {
+					@Header(name = "Date", schema = @Schema(type = "string", pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")),
+					@Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string")),
+					@Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string")) }),
+			@ApiResponse(responseCode = "default", description = "Unexpected error", content = @Content(schema = @Schema(implementation = ApplicationOnboardingError.class), mediaType = MediaType.APPLICATION_JSON_VALUE), headers = {
+					@Header(name = "Date", schema = @Schema(type = "string", pattern = "(Sun|Mon|Tue|Wed|Thu|Fri|Sat),\\s([0-9]{1,2})\\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s[0-9][0-9][0-9][0-9](:|\\s)[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\sGMT")),
+					@Header(name = "TrackingId", description = "Request tracking Id", schema = @Schema(type = "string")),
+					@Header(name = "Cache-Control", description = "Cache", schema = @Schema(type = "string")) }) })
 	@Parameter(name = "id", description = "Application Id")
 	@GetMapping(path = "/{id}", produces = "application/json")
-	public @ResponseBody ResponseEntity<Object> viewAppdynamics( @PathVariable("id") String appdProjectId) {
-    	ViewAppdynamicsResponse viewResponse;
+	public @ResponseBody ResponseEntity<Object> viewAppdynamics(@PathVariable("id") String appdProjectId) {
+		ViewAppdynamicsResponse viewResponse;
 		String trackingId = this.createTrackingId();
 		final HttpHeaders httpHeaders = this.createHeaders(trackingId);
 		MDC.put(Constants.REQUEST_TYPE_TRACKING_ID, trackingId);
 
-		try {
-			
-			logger.info(
-					"AppDOnboardingRequestHandlerImpl: viewAppdynamics :: Started View Appdynamics API For AppD external Id");
-			if (!XSSValidationUtil.xSSAttackValidation(appdProjectId)) {
-				ApplicationOnboardingError appError = new ApplicationOnboardingError();
-				appError.setCode(HttpStatus.BAD_REQUEST.name());
-				logger.info("viewAppdynamics - Request type validation failed");
-				appError.setMessage("Bad request type for view");
-				return new ResponseEntity<>(appError, httpHeaders, HttpStatus.BAD_REQUEST);
-			}
-			
-			viewResponse = requestHandler.getRequestByProjectId(appdProjectId);
-			
-			if(viewResponse == null) {
-				logger.info("viewAppdynamics - AppD external Id not found");
-				ApplicationOnboardingError appError = new ApplicationOnboardingError();
-				appError.setCode(HttpStatus.NOT_FOUND.name());
-				appError.setMessage("Applicatin id is not found");
-				return new ResponseEntity<>(appError,httpHeaders, HttpStatus.NOT_FOUND);
-			}
-			
-			return new ResponseEntity<>(viewResponse, httpHeaders, HttpStatus.OK);
-			
+		logger.info(
+				"AppDOnboardingRequestHandlerImpl: viewAppdynamics :: Started View Appdynamics API For AppD external Id");
+		if (!XSSValidationUtil.xSSAttackValidation(appdProjectId)) {
+			ApplicationOnboardingError appError = new ApplicationOnboardingError();
+			appError.setCode(HttpStatus.BAD_REQUEST.name());
+			logger.info("viewAppdynamics - Request type validation failed");
+			appError.setMessage("Bad request type for view");
+			return new ResponseEntity<>(appError, httpHeaders, HttpStatus.BAD_REQUEST);
 		}
-		catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			logger.info("viewAppdynamics - Request Failed Returning 500");
-			return new ResponseEntity<>(httpHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+
+		viewResponse = requestHandler.getRequestByProjectId(appdProjectId);
+
+		if (viewResponse == null) {
+			logger.info("viewAppdynamics - AppD external Id not found");
+			ApplicationOnboardingError appError = new ApplicationOnboardingError();
+			appError.setCode(HttpStatus.NOT_FOUND.name());
+			appError.setMessage("Applicatin id is not found");
+			return new ResponseEntity<>(appError, httpHeaders, HttpStatus.NOT_FOUND);
 		}
+
+		return new ResponseEntity<>(viewResponse, httpHeaders, HttpStatus.OK);
+
 	}
 
 	/**
@@ -412,9 +423,10 @@ public class AppDOnboardingHandler {
 
 	/**
 	 * This method builds the body of create request
-	 * @param trackingId - This is used to track request status
-	 * @param rDetails - This is the payload of the request
-	 * @param appdProjectId - This is the ID of the application created on controller
+	 * @param trackingId    - This is used to track request status
+	 * @param rDetails      - This is the payload of the request
+	 * @param appdProjectId - This is the ID of the application created on
+	 *                      controller
 	 * @return
 	 */
 	public RequestDetails buildBodyForCreate(String trackingId, ApplicationOnboardingRequest rDetails,
@@ -435,9 +447,10 @@ public class AppDOnboardingHandler {
 
 	/**
 	 * This method builds the body of update request
-	 * @param trackingId - This is used to track request status
-	 * @param rDetails - This is the payload of the request
-	 * @param appdProjectId - This is the ID of the application created on controller
+	 * @param trackingId    - This is used to track request status
+	 * @param rDetails      - This is the payload of the request
+	 * @param appdProjectId - This is the ID of the application created on
+	 *                      controller
 	 * @return
 	 */
 	public RequestDetails buildBodyForUpdate(String trackingId, ApplicationOnboardingUpdateRequest rDetails,
@@ -451,10 +464,9 @@ public class AppDOnboardingHandler {
 		requestDetails.setAppdProjectId(appdProjectId);
 		requestDetails.setTrackingId(trackingId);
 		requestDetails.setCtrlName(controller);
-		
+
 		return requestDetails;
 	}
-
 
 	/**
 	 * Creates ApplicationOnboardingError object for failed validation
@@ -466,7 +478,7 @@ public class AppDOnboardingHandler {
 		appError.setCode(validateResult.getErrorObject().getCode() + "");
 		appError.setMessage(validateResult.getErrorObject().getMsg());
 		return appError;
-		
+
 	}
 
 	/**
@@ -477,12 +489,10 @@ public class AppDOnboardingHandler {
 		ApplicationOnboardingError appError = new ApplicationOnboardingError();
 		appError.setCode(HttpStatus.INTERNAL_SERVER_ERROR.name());
 		appError.setMessage(Constants.ERROR_MESSAGE_FAILED_PERSISTANCE);
-        return appError;
-		
-		
+		return appError;
+
 	}
-	
-	
+
 	/**
 	 * Converts array to String
 	 * @param dataList - data for conversion into String
@@ -503,46 +513,54 @@ public class AppDOnboardingHandler {
 
 	/**
 	 * Validates EUM and Alert Aliases in payload
+	 * 
 	 * @param eumApplicationGroupNames - List of Eum applications in payload
-	 * @param alertAliases - List of Alert aliases in payload
+	 * @param alertAliases             - List of Alert aliases in payload
 	 * @return - String
-	 * @throws AppDOnboardingException 
+	 * @throws AppDOnboardingException
 	 */
-	public String validateEUMAndalertAliases(List<String> eumApplicationGroupNames, List<String> alertAliases, String requestType) throws AppDOnboardingException {
+	public String validateEUMAndalertAliases(List<String> eumApplicationGroupNames, List<String> alertAliases)
+			throws AppDOnboardingException {
 		String finalResult = null;
 		if (eumApplicationGroupNames != null && eumApplicationGroupNames.size() > maxNumOfEum) {
-			logger.info(
-					"validateEUMAndalertAliases - Request is not Valid : No Of EUM Apps are more than allowed");
+			logger.info("validateEUMAndalertAliases - Request is not Valid : No Of EUM Apps are more than allowed");
 			return "Request is not Valid : No of  EUM Apps are more than allowed";
 
 		}
 		if (alertAliases != null && alertAliases.size() > maxNumOfAlerts) {
-			logger.info("validateEUMAndalertAliases - Request is not Valid : No Of Alert Aliases are more than allowed {}", maxNumOfAlerts);
+			logger.info(
+					"validateEUMAndalertAliases - Request is not Valid : No Of Alert Aliases are more than allowed {}",
+					maxNumOfAlerts);
 			return "Request is not Valid : No Of Alert Aliases are more than allowed";
 		}
-		if (eumApplicationGroupNames!= null) {
-			finalResult=this.eumNameCheck(eumApplicationGroupNames);
+		if (eumApplicationGroupNames != null) {
+			finalResult = this.eumNameCheck(eumApplicationGroupNames);
 		}
 		try {
-		      if(!operationHandler.checkIfEUMApplicationNotExist(eumApplicationGroupNames, controller) && !requestType.equals(Constants.REQUEST_TYPE_UPDATE))
-		    	  return "Request is not Valid : EUM App name already exists";
+			if (!operationHandler.checkIfEUMApplicationNotExist(eumApplicationGroupNames, controller))
+				return EUM_EXISTS_MSG;
 		} catch (AppDOnboardingException e) {
-				throw new AppDOnboardingException("validateEUMAndalertAliases - checkIfEUMApplicationNotExist - Exception in checkIfEUMApplicationNotExist", e);
+			throw new AppDOnboardingException(
+					"validateEUMAndalertAliases - checkIfEUMApplicationNotExist - Exception in checkIfEUMApplicationNotExist",
+					e);
 
-			}
+		}
 		return finalResult;
 	}
- /**
-  * This method is used to check whether any eum name is same as eum name is case insensitive
-  * @param eumApplicationGroupNames
-  * @return
-  */
+
+	/**
+	 * This method is used to check whether any eum name is same as eum name is case
+	 * insensitive
+	 * @param eumApplicationGroupNames
+	 * @return
+	 */
 	private String eumNameCheck(List<String> eumApplicationGroupNames) {
 		for (int i = 0; i < eumApplicationGroupNames.size(); i++) {
 			String checkName = eumApplicationGroupNames.get(i);
 			for (int j = i + 1; j < eumApplicationGroupNames.size(); j++) {
 				if (eumApplicationGroupNames.get(j).equalsIgnoreCase(checkName)) {
-					logger.info("validateEUMAndalertAliases - Request is not Valid :EUM App name is not case sensitive");
+					logger.info(
+							"validateEUMAndalertAliases - Request is not Valid :EUM App name is not case sensitive");
 					return "Request is not Valid : EUM App name is case insensitive";
 				}
 			}
@@ -563,7 +581,7 @@ public class AppDOnboardingHandler {
 	/**
 	 * Creates response for create request
 	 * @param onboardingRequest - Onboarding request payload
-	 * @param appdExternalId - Application Id 
+	 * @param appdExternalId    - Application Id
 	 * @return - ApplicationOnboardingResponse object
 	 */
 	private ApplicationOnboardingResponse createResponse(ApplicationOnboardingRequest onboardingRequest,
@@ -583,12 +601,11 @@ public class AppDOnboardingHandler {
 	/**
 	 * Creates response for update request
 	 * @param onboardingRequest - Onboarding request payload
-	 * @param appdExternalId - Application Id 
+	 * @param appdExternalId    - Application Id
 	 * @return - ApplicationOnboardingResponse Object
 	 */
 	private ApplicationOnboardingResponse createUpdateResponse(ApplicationOnboardingUpdateRequest onboardingRequest,
-			String appdExternalId)
-	{
+			String appdExternalId) {
 		ApplicationOnboardingResponse appResponse = new ApplicationOnboardingResponse();
 		appResponse.setAlertAliases(onboardingRequest.getAlertAliases());
 		appResponse.setAdminUsers(onboardingRequest.getAdminUsers());
@@ -602,6 +619,7 @@ public class AppDOnboardingHandler {
 			appResponse.setApmApplicationGroupName(tempRequest.getRequestDetails().getAppGroupName());
 		return appResponse;
 	}
+
 	/**
 	 * Create header response for all request
 	 * @param trackingId
@@ -615,7 +633,8 @@ public class AppDOnboardingHandler {
 		headers.add(STRICT_TRANSPORT_SECURITY, "max-age=31536000; includeSubDomains; preload");
 		headers.add(X_XSS_PROTECTION, "1; mode=block");
 		headers.add(X_FRAME_OPTIONS, "Deny");
-		headers.add(CONTENT_SECURITY_POLICY, "default-src 'self'; base-uri 'self'; frame-ancestors 'self'; block-all-mixed-content");
+		headers.add(CONTENT_SECURITY_POLICY,
+				"default-src 'self'; base-uri 'self'; frame-ancestors 'self'; block-all-mixed-content");
 		headers.add(SET_COOKIE, "Path=/; Secure; HttpOnly");
 		return headers;
 	}
