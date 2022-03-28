@@ -36,8 +36,6 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 	@Autowired
 	EUMMetaDataDAO eUMMetaDataDAO;
 	@Autowired
-	LicenseUsageCheckHandler licenseUsageCheckHandler;
-	@Autowired
 	RequestHandler requestHandler;
 	@Autowired
 	DBOperationHandler operationHandler;
@@ -76,8 +74,6 @@ public class DBHandler extends AppDOnboardingRequestHandlerImpl {
 
 			}
 			if (res) {
-				this.setNextHandler(licenseUsageCheckHandler);
-				super.handleRequestImpl(request);
 				logger.info("handleRequest - END");
 			}
 		} catch (AppDOnboardingException e) {
