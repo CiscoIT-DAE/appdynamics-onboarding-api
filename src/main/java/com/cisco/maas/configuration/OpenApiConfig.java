@@ -35,6 +35,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
         name = "Service Assurance AppDynamics Onboarding API Team",
         email = "TBD",
         url = "http://"
-    ), license = @License(name = "TBD",url="http://")), servers = {@Server(url = "http://localhost:8080/appd-onboarding-api", description = "Local Server")}, tags = {@Tag(name = "Service Assurance AppDynamics Onboarding API", description = "Service Assurance AppDynamics Onboarding API")} )
+    ), license = @License(name = "TBD",url="http://")), tags = {@Tag(name = "Service Assurance AppDynamics Onboarding API", description = "Service Assurance AppDynamics Onboarding API")} )
 public class OpenApiConfig implements WebMvcConfigurer {
 }

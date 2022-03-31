@@ -6,7 +6,7 @@ This repository contains the reusable code to onboard Applications, Users, Roles
 This code build requires Java 1.8, Maven 3.8.4, MongoDB 5.0.6, Docker
 
 ```
-git clone git@github.com:CiscoIT-DAE/appdynamics-onboarding-api.git
+git clone https://github.com/CiscoIT-DAE/appdynamics-onboarding-api.git
 cd appdynamics-onboarding-api
 
 ### Configuration (src/main/resources/config.properties) - Below is the config.properties changes required before building this project
