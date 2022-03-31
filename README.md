@@ -36,6 +36,8 @@ docker run --name appd-onboarding-api --network dev-net  -e appd_user='{base64 e
 Once the appd-onboarding-api and mongo docker containers started, Rest APIs documentation is available at 
 [OpenAPI Specs] (http://localhost:8080/appd-onboarding-api/swagger-ui/index.html?configUrl=/appd-onboarding-api/v3/api-docs/swagger-config)
 
+Note: Replace the localhost with IP address or domain name of the VM, if this is deployed in a VM
+
 Below are the APIs provided by this code base
 ```
 POST /api​/v1​/applications - Onboard Applications into AppDynamics Controller
