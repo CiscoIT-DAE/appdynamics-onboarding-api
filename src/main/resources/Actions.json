@@ -1,21 +1,4 @@
 [
-    {
-        "actionType": "EmailAction",
-        "name": "24330D7E-D061-5CD2-158E-A58D4024B736",
-        "priority": 1,
-        "description": null,
-        "toAddress": "appd-alerts@cisco.com",
-        "subject": "",
-        "timeZone": null
-    },
-    {
-        "actionType": "HttpRequestAction",
-        "name": "appd-chain-alerts",
-        "priority": 0,
-        "description": null,
-        "httpRequestActionPlanName": "Receive-Events",
-        "customProperties": {}
-    },
      {
         "actionType": "EmailAction",
         "name": "$ALERT_UUID$",

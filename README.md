@@ -14,6 +14,32 @@ appd.controller={AppD SaaS Controller Name}
 
 The controller name should be picked from the SaaS controller URL.  For example, If the controller URL is https://abc.saas.appdynamics.com/controller/, then the 'appd.controller' value should be 'abc'.
 
+The below mentioned json files are instrumented with default permissions and can be used to extend further set of permissions, if required 
+
+src/main/resources/AdminRole.json
+- This file contains the default permission settings for the Admin role to be configured on the AppD controller
+- Admin Role used to view and modify components that change state, such as applications, business transactions, dashboards, and so on
+
+src/main/resources/ViewRole.json
+- This file contains the default permission settings for the View role to be configured on the AppD controller
+- View Role used to view components such as applications, business transactions, dashboards, and so on
+
+src/main/resources/HealthRule.json
+- This file contains the default Health Rules to be configured on the AppD controller
+- Health rules let you specify the parameters that represent what you consider normal or expected operations for your environment
+
+src/main/resources/Actions.json
+- This file contains the default Actions to be configured on the AppD controller
+- An action is a predefined, reusable, automated response to an event
+
+src/main/resources/Policies.json
+- This file contains the default Policies to be configured on the AppD controller
+- A policy consists of a trigger based on one or more events and an action in response to the trigger. You can use policies to automate monitoring, alerting, and problem remediation
+
+src/main/resources/createLicenseRule.json
+- This file contains the License information to be configured on the AppD controller
+
+
 mvn clean install
 docker build -t appd-onboarding-api:v1.0.0 .
 ```
@@ -205,5 +231,4 @@ Seshagirirao Surapaneni <sesurapa@cisco.com>
 
 ## License
 
-This project is licensed to you under the terms of the [Cisco Sample
-Code License](./LICENSE).
+This project is licensed to you under the terms of the [Apache License 2.0](./LICENSE).
