@@ -213,6 +213,29 @@ HTTP Response Body: {
 }
 ```
 
+## Database Overview
+The MongoDB instance captures the metadata information about the onboarded application(s) for the onboarding API.
+
+The following collections will be created to keep track of the metadata;
+
+- appDOnboardingRequest:
+
+This collection stores the metadata for the create or update request generated via onboarding API call. 
+It stores flags which indicate the status of request, the request tracking Id and all the details associated with the request. It also contains retry details incase the request failed initially.
+
+- roleMapping:
+
+This collection stores metadata for each role created in AppDynamics via onboarding API call.
+It stores the controller name, application name and name of the admin and view roles associated with the application.
+
+- eUMMetaData:
+
+This collection stores EUM metadata which includes the appD project Id asscociated with that EUM, it's name and the date (and time) of EUM creation.
+
+- aPPDMaster:
+
+This collection stores the license metadata for APM and EUM. 
+It stores the License key for the lincenses created in the controller, the application and the application Id associated with the licenses. It also stores the alert aliases for the application.
 
 ## Authors & Maintainers
 Fabeha Fatima <ffatima@cisco.com >
