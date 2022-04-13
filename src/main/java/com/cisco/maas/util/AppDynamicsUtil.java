@@ -263,8 +263,12 @@ public class AppDynamicsUtil {
 			String payload = "{\"name\": \""+ applicationGroupName +"\",\"description\": \"\"}";
 			ResponseEntity<JSONObject> response = this.postRequest(rURL,payload);
 			logger.info("createApplicationInAppDynamics - END");
-			if(response.hasBody())
-			   return response.getBody().get("id").toString();
+			if(response.hasBody()) {
+				JSONObject responseBody = response.getBody();
+				if(responseBody!=null)
+					return responseBody.get("id").toString();
+				return null;
+			} 
 			else
 				return null;
 		}

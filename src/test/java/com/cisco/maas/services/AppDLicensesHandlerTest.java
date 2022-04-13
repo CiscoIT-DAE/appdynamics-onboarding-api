@@ -1,10 +1,14 @@
 package com.cisco.maas.services;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -20,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cisco.maas.dao.APPDMasterDAO;
-import com.cisco.maas.dto.LicenseRule;
 import com.cisco.maas.dto.AppDOnboardingRequest;
 import com.cisco.maas.dto.RequestDetails;
 import com.cisco.maas.dto.RetryDetails;
@@ -41,6 +44,8 @@ public class AppDLicensesHandlerTest {
 	APPDMasterDAO appdMasterDao;
 	@Mock
 	RequestHandler requestHandler;
+	@Mock
+	AppDApplicationCreationHandler appDApplicationCreationHandler;
 
 	@Before
 	public void setup() {
@@ -76,37 +81,9 @@ public class AppDLicensesHandlerTest {
 		assertNull(licensesHandler.readLicenseRule("APM-n", null));
 	}
 
-	@Test
-	public void createLicenseRule() throws Exception {
-		AppDOnboardingRequest request = new AppDOnboardingRequest();
-		RetryDetails rDetails = new RetryDetails();
-		rDetails.setFailureModule("LicenseHandler");
-		RequestDetails requestDetails = new RequestDetails();
-		requestDetails.setAppGroupName("APM-n");
-		requestDetails.setCtrlName("cisco1nonprod");
-		requestDetails.setApmLicenses(5);
-		request.setRetryDetails(rDetails);
-		request.setRequestDetails(requestDetails);
-		File file = new File(getClass().getClassLoader().getResource("TestLicenseRule.json").getFile());
-		String path = file.getPath();	      
-	    String content = new String ( Files.readAllBytes(Paths.get(path)));		
-	    
-	    String ctrlName="cisco1";
-	    String rURL="mds/v1/license/rules/name/";		
-		rURL="https://"+ctrlName+".saas.appdynamics.com/controller/"+rURL;
-		
-		String rURL1=rURL+"Test";
-		
-		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
-		Mockito.when(appdUtil.appDConnectionOnlyGet(rURL1,"GET",ctrlName,"license")).thenReturn(content);
-		Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(content);
-	    assertNotNull(licensesHandler.createLicenseRule(request));
-	} 
-
 	@Test 
-	public void createLicenseRule1() throws Exception
+	public void createLicenseRule() throws Exception
 	{
-		
 		AppDOnboardingRequest request=new AppDOnboardingRequest();
 		RetryDetails rDetails=new RetryDetails();
 		rDetails.setFailureModule("LicenseHandler");
@@ -119,17 +96,37 @@ public class AppDLicensesHandlerTest {
 		File file = new File(getClass().getClassLoader().getResource("TestLicenseRule.json").getFile());
 		String path = file.getPath();	      
 	    String content = new String ( Files.readAllBytes(Paths.get(path)));		
-	    
 	    String ctrlName="cisco1";
 	    String rURL="mds/v1/license/rules/name/";		
 		rURL="https://"+ctrlName+".saas.appdynamics.com/controller/"+rURL;
+		 Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{\n"
+		    		+ "    \"accountId\": 51, \n"
+		    		+ "    \"packages\": [\n"
+		    		+ "        {\n"
+		    		+ "            \"packageName\": \"apm-agent\",\n"
+		    		+ "            \"kind\": \"AGENT_BASED\",\n"
+		    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+		    		+ "            \"licenseUnits\": 185,\n"
+		    		+ "            \"properties\": {\n"
+		    		+ "                \"licenseModel\": \"FIXED\",\n"
+		    		+ "                \"edition\": \"PRO\",\n"
+		    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+		    		+ "            },\n"
+		    		+ "            \"agentTypes\": [\n"
+		    		+ "                \"APM\"\n"
+		    		+ "            ]\n"
+		    		+ "        }\n"
+		    		+ "    ]\n"
+		    		+ "}").thenReturn(null);
 		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
 	    Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(content);
 	    assertNotNull(licensesHandler.createLicenseRule(request));
 	} 
 	
-	@Test 
-	public void createLicenseRule2() throws Exception
+	@Test(expected=AppDOnboardingException.class)
+	public void createLicenseRuleResponseNotNull() throws Exception
 	{
 		AppDOnboardingRequest request=new AppDOnboardingRequest();
 		RetryDetails rDetails=new RetryDetails();
@@ -147,53 +144,562 @@ public class AppDLicensesHandlerTest {
 	    String ctrlName="ciscoeft";
 	    String rURL="mds/v1/license/rules/name/";		
 		rURL="https://"+ctrlName+".saas.appdynamics.com/controller/"+rURL;
-		
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{\n"
+		    		+ "    \"accountId\": 51, \n"
+		    		+ "    \"packages\": [\n"
+		    		+ "        {\n"
+		    		+ "            \"packageName\": \"apm-agent\",\n"
+		    		+ "            \"kind\": \"AGENT_BASED\",\n"
+		    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+		    		+ "            \"licenseUnits\": 185,\n"
+		    		+ "            \"properties\": {\n"
+		    		+ "                \"licenseModel\": \"FIXED\",\n"
+		    		+ "                \"edition\": \"PRO\",\n"
+		    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+		    		+ "            },\n"
+		    		+ "            \"agentTypes\": [\n"
+		    		+ "                \"APM\"\n"
+		    		+ "            ]\n"
+		    		+ "        }\n"
+		    		+ "    ]\n"
+		    		+ "}").thenReturn("{\n"
+		    				+ "    \"id\": \"4fe654cf-3d03-40b3-9e5e-9ac7b05d2435\",\n"
+		    				+ "    \"version\": 0,\n"
+		    				+ "    \"name\": \"Test-fabeha-check-for-license2\",\n"
+		    				+ "    \"description\": \"Created by AppD On-boarding Automation\",\n"
+		    				+ "    \"enabled\": true,\n"
+		    				+ "    \"constraints\": [\n"
+		    				+ "        {\n"
+		    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.ApplicationEntity\",\n"
+		    				+ "            \"constraint_type\": \"ALLOW_SELECTED\",\n"
+		    				+ "            \"match_conditions\": [\n"
+		    				+ "                {\n"
+		    				+ "                    \"match_type\": \"EQUALS\",\n"
+		    				+ "                    \"attribute_type\": \"NAME\",\n"
+		    				+ "                    \"match_string\": \"Test-fabeha-check-for-license2\"\n"
+		    				+ "                }\n"
+		    				+ "            ]\n"
+		    				+ "        },\n"
+		    				+ "        {\n"
+		    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.MachineEntity\",\n"
+		    				+ "            \"constraint_type\": \"ALLOW_ALL\",\n"
+		    				+ "            \"match_conditions\": []\n"
+		    				+ "        }\n"
+		    				+ "    ],\n"
+		    				+ "    \"entitlements\": [\n"
+		    				+ "        {\n"
+		    				+ "            \"license_module_type\": \"NETVIZ\",\n"
+		    				+ "            \"number_of_licenses\": 0\n"
+		    				+ "        },\n"
+		    				+ "        {\n"
+		    				+ "            \"license_module_type\": \"MACHINE_AGENT\",\n"
+		    				+ "            \"number_of_licenses\": 8\n"
+		    				+ "        },\n"
+		    				+ "        {\n"
+		    				+ "            \"license_module_type\": \"SIM_MACHINE_AGENT\",\n"
+		    				+ "            \"number_of_licenses\": 0\n"
+		    				+ "        },\n"
+		    				+ "        {\n"
+		    				+ "            \"license_module_type\": \"APM\",\n"
+		    				+ "            \"number_of_licenses\": 8\n"
+		    				+ "        }\n"
+		    				+ "    ],\n"
+		    				+ "    \"account_id\": \"ff112693-e8c1-43d1-9838-2bb69b6c0e0a\",\n"
+		    				+ "    \"access_key\": \"a5a923c5-5e7b-4ff6-b178-05f52a7548c4\",\n"
+		    				+ "    \"total_licenses\": null,\n"
+		    				+ "   \n"
+		    				+ "}");
 		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
 		Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(content);
-	    assertNotNull(licensesHandler.createLicenseRule(request));
+		assertNotNull(licensesHandler.createLicenseRule(request));
 	} 
-	
-	@Test (expected=AppDOnboardingException.class)
-	public void createLicenseRule4() throws Exception
-	{
-		AppDOnboardingRequest request=new AppDOnboardingRequest();
-		File file = new File(getClass().getClassLoader().getResource("TestLicenseRule.json").getFile());
-		String path = file.getPath();	      
-	    String content = new String ( Files.readAllBytes(Paths.get(path)));		
-	    
-	    String ctrlName="cisco1nonprod";
-	    String rURL="mds/v1/license/rules/name/";		
-		rURL="https://"+ctrlName+".saas.appdynamics.com/controller/"+rURL;
-		
-		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
-	    Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(content);
-	    assertNull(licensesHandler.createLicenseRule(request));
-	} 	
-	
 	@Test(expected=AppDOnboardingException.class)
-	public void createLicenseRule5() throws Exception
+	public void createLicenseRuleNoModel() throws Exception
 	{
 		AppDOnboardingRequest request=new AppDOnboardingRequest();
 		RetryDetails rDetails=new RetryDetails();
 		rDetails.setFailureModule("LicenseHandler");
 		RequestDetails requestDetails = new RequestDetails();
-		requestDetails.setAppGroupName("APMApp");
-		requestDetails.setCtrlName("cisco1");
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
 		requestDetails.setApmLicenses(5);
 		request.setRetryDetails(rDetails);
 		request.setRequestDetails(requestDetails);
-		String ctrlName = "cisco1";
-		String rURL = "mds/v1/license/rules/name/";
-		rURL = "https://" + ctrlName + ".saas.appdynamics.com/controller/" + rURL;
-		LicenseRule lr = new LicenseRule();
-		lr.setNoOfApmLicenses("1");
-		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
-	    Mockito.doReturn(lr).when(licensesHandler).readLicenseRule(any(String.class),any(String.class)); 
-		licensesHandler.createLicenseRule(request);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{\n"
+		    		+ "    \"accountId\": 51, \n"
+		    		+ "    \"packages\": [\n"
+		    		+ "        {\n"
+		    		+ "            \"packageName\": \"xyz\",\n"
+		    		+ "            \"kind\": \"abc_efg\",\n"
+		    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+		    		+ "            \"licenseUnits\": 185,\n"
+		    		+ "            \"properties\": {\n"
+		    		+ "                \"licenseModel\": \"FIXED\",\n"
+		    		+ "                \"edition\": \"PRO\",\n"
+		    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+		    		+ "            },\n"
+		    		+ "            \"agentTypes\": [\n"
+		    		+ "                \"APM\"\n"
+		    		+ "            ]\n"
+		    		+ "        }\n"
+		    		+ "    ]\n"
+		    		+ "}").thenReturn(null);
+		Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(null);
+		assertNotNull(licensesHandler.createLicenseRule(request));
 	}
+	@Test(expected=AppDOnboardingException.class)
+	public void createLicenseRuleModelKindInvalid() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{\n"
+		    		+ "    \"accountId\": 51, \n"
+		    		+ "    \"packages\": [\n"
+		    		+ "        {\n"
+		    		+ "            \"packageName\": \"apm-agent\",\n"
+		    		+ "            \"kind\": \"abc_efg\",\n"
+		    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+		    		+ "            \"licenseUnits\": 185,\n"
+		    		+ "            \"properties\": {\n"
+		    		+ "                \"licenseModel\": \"FIXED\",\n"
+		    		+ "                \"edition\": \"PRO\",\n"
+		    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+		    		+ "            },\n"
+		    		+ "            \"agentTypes\": [\n"
+		    		+ "                \"APM\"\n"
+		    		+ "            ]\n"
+		    		+ "        }\n"
+		    		+ "    ]\n"
+		    		+ "}").thenReturn(null);
+		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
+		Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(null);
+		assertNotNull(licensesHandler.createLicenseRule(request));
+	}
+	@Test(expected=AppDOnboardingException.class)
+	public void createLicenseRuleModelException() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenThrow(IOException.class);
+		assertNotNull(licensesHandler.createLicenseRule(request));
+	}
+	@Test(expected=AppDOnboardingException.class)
+	public void createLicenseRuleModelResponseNullValueTest() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{}");
+		assertNotNull(licensesHandler.createLicenseRule(request));
+	}
+	
+	@Test(expected=AppDOnboardingException.class)
+	public void createLicenseRuleModelResponsePackageTest() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{\"packages\":[]}");
+		assertNotNull(licensesHandler.createLicenseRule(request));
+	}
+	@Test(expected=AppDOnboardingException.class)
+	public void createLicenseRuleAppDConnectionFailed() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+	    String ctrlName="ciscoeft";
+	    String rURL="mds/v1/license/rules/name/";		
+		rURL="https://"+ctrlName+".saas.appdynamics.com/controller/"+rURL;
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{\n"
+		    		+ "    \"accountId\": 51, \n"
+		    		+ "    \"packages\": [\n"
+		    		+ "        {\n"
+		    		+ "            \"packageName\": \"apm-agent\",\n"
+		    		+ "            \"kind\": \"AGENT_BASED\",\n"
+		    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+		    		+ "            \"licenseUnits\": 185,\n"
+		    		+ "            \"properties\": {\n"
+		    		+ "                \"licenseModel\": \"FIXED\",\n"
+		    		+ "                \"edition\": \"PRO\",\n"
+		    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+		    		+ "            },\n"
+		    		+ "            \"agentTypes\": [\n"
+		    		+ "                \"APM\"\n"
+		    		+ "            ]\n"
+		    		+ "        }\n"
+		    		+ "    ]\n"
+		    		+ "}").thenReturn(null);
+		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
+		Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(null);
+		assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
 
+	@Test(expected=AppDOnboardingException.class)
+	public void createLicenseRuleAppDConnectionException() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+	    String ctrlName="ciscoeft";
+	    String rURL="mds/v1/license/rules/name/";		
+		rURL="https://"+ctrlName+".saas.appdynamics.com/controller/"+rURL;
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 51   \n"
+		 		+ "}").thenReturn("{\n"
+		    		+ "    \"accountId\": 51, \n"
+		    		+ "    \"packages\": [\n"
+		    		+ "        {\n"
+		    		+ "            \"packageName\": \"apm-agent\",\n"
+		    		+ "            \"kind\": \"AGENT_BASED\",\n"
+		    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+		    		+ "            \"licenseUnits\": 185,\n"
+		    		+ "            \"properties\": {\n"
+		    		+ "                \"licenseModel\": \"FIXED\",\n"
+		    		+ "                \"edition\": \"PRO\",\n"
+		    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+		    		+ "            },\n"
+		    		+ "            \"agentTypes\": [\n"
+		    		+ "                \"APM\"\n"
+		    		+ "            ]\n"
+		    		+ "        }\n"
+		    		+ "    ]\n"
+		    		+ "}").thenReturn(null);
+		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
+		Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenThrow(IOException.class);
+		assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
+	@Test 
+	public void createLicenseRuleForInfraEnterprise() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);	      
+	    String content = "{\n"
+	    		+ "    \"id\": \"123\",\n"
+	    		+ "    \"accountId\": 186,\n"
+	    		+ "    \"name\": \"test-check\",\n"
+	    		+ "    \"licenseKey\": \"abc123\",\n"
+	    		+ "    \"filters\": [\n"
+	    		+ "        {\n"
+	    		+ "            \"id\": \"xyz7\",\n"
+	    		+ "            \"type\": \"APPLICATION\",\n"
+	    		+ "            \"operator\": \"ID_EQUALS\",\n"
+	    		+ "            \"value\": \"3736\"\n"
+	    		+ "        }\n"
+	    		+ "    ],\n"
+	    		+ "    \"limits\": [\n"
+	    		+ "        {\n"
+	    		+ "            \"id\": \"abc7\",\n"
+	    		+ "            \"package\": \"ENTERPRISE\",\n"
+	    		+ "            \"units\": 1\n"
+	    		+ "        }\n"
+	    		+ "    ],\n"
+	    		+ "    \"tags\": [],\n"
+	    		+ "    \"createdDate\": \"2022-04-11T11:02:32Z\",\n"
+	    		+ "    \"lastUpdatedDate\": \"2022-04-11T11:02:32Z\",\n"
+	    		+ "    \"disabled\": false,\n"
+	    		+ "    \"machineAgentPriority\": false\n"
+	    		+ "}";		
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 186   \n"
+		 		+ "}").thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "           \n"
+		 				+ "        },\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"PREMIUM\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn("{\n"
+		 						+ "    \"id\": 186  \n"
+		 						+ "}");
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
+	    Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(content);
+	    assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
+	@Test (expected=AppDOnboardingException.class)
+	public void createLicenseRuleForInfraEnterpriseExceptionForAccountIdTest() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);	      
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenThrow(IOException.class);
+	    assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
+	@Test (expected=AppDOnboardingException.class)
+	public void createLicenseRuleForInfraEnterpriseEmptyAccountIdTest() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);	      
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{}");
+	    assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
+	@Test (expected=AppDOnboardingException.class)
+	public void createLicenseRuleForInfraEnterpriseAccountIdIsNullTest() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);	      
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+				+ "    \"id\": null\n"
+				+ "}");
+	    assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
+	@Test (expected=AppDOnboardingException.class)
+	public void createLicenseRuleForInfraEnterpriseException() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 186   \n"
+		 		+ "}").thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "           \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn("{\n"
+		 						+ "    \"id\": 186  \n"
+		 						+ "}");
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+	    Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenThrow(IOException.class);
+	    assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
+	@Test (expected=AppDOnboardingException.class)
+	public void createLicenseRuleForInfraInvalidModelKind() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 186   \n"
+		 		+ "}").thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"xyz\",\n"
+		 				+ "           \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn("{\n"
+		 						+ "    \"id\": 186  \n"
+		 						+ "}");
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+	    Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenThrow(IOException.class);
+	    assertNotNull(licensesHandler.createLicenseRule(request));
+	} 
+	@Test 
+	public void createLicenseRuleForInfraPremiumException() throws Exception
+	{
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		String content = "{\n"
+	    		+ "    \"id\": \"123\",\n"
+	    		+ "    \"accountId\": 186,\n"
+	    		+ "    \"name\": \"test-check\",\n"
+	    		+ "    \"licenseKey\": \"abc123\",\n"
+	    		+ "    \"filters\": [\n"
+	    		+ "        {\n"
+	    		+ "            \"id\": \"xyz7\",\n"
+	    		+ "            \"type\": \"APPLICATION\",\n"
+	    		+ "            \"operator\": \"ID_EQUALS\",\n"
+	    		+ "            \"value\": \"3736\"\n"
+	    		+ "        }\n"
+	    		+ "    ],\n"
+	    		+ "    \"limits\": [\n"
+	    		+ "        {\n"
+	    		+ "            \"id\": \"abc7\",\n"
+	    		+ "            \"package\": \"PREMIUM\",\n"
+	    		+ "            \"units\": 1\n"
+	    		+ "        }\n"
+	    		+ "    ],\n"
+	    		+ "    \"tags\": [],\n"
+	    		+ "    \"createdDate\": \"2022-04-11T11:02:32Z\",\n"
+	    		+ "    \"lastUpdatedDate\": \"2022-04-11T11:02:32Z\",\n"
+	    		+ "    \"disabled\": false,\n"
+	    		+ "    \"machineAgentPriority\": false\n"
+	    		+ "}";	
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 186   \n"
+		 		+ "}").thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"PREMIUM\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "           \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn("{\n"
+		 						+ "    \"id\": 186  \n"
+		 						+ "}");
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		//Mockito.when(appdUtil.getRequest(any(String.class))).thenReturn("{\"account\":{\"key\":\"1234\"}}");
+	    Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(content);
+	    assertNotNull(licensesHandler.createLicenseRule(request));
+	}
 	@Test
-	public void updateLicenseRuleTest() throws Exception {
+	public void createLicenseRuleForPremium() throws Exception
+	{  	AppDOnboardingException e = null;
+		AppDOnboardingRequest request=new AppDOnboardingRequest();
+		RetryDetails rDetails=new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);	  
+		try{
+		    	
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn("{\n"
+		 		+ "    \"id\": 186   \n"
+		 		+ "}").thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"PREMIUM\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn("{\n"
+		 						+ "    \"id\": 186  \n"
+		 						+ "}");
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+	    Mockito.when(appdUtil.appDConnection(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(null);
+	    licensesHandler.createLicenseRule(request);
+	    }
+	    catch(AppDOnboardingException error){
+	    	e=error;
+	    }
+	    assertNotNull(e);
+	    verify(licensesHandler, times(1)).createLicenseRule(request);
+	} 
+	@Test
+	public void updateLicenseRuleTestForAgentBasedModel() throws Exception {
 		String json = "{ \"name\": \"AppD-Test-New2\", \"entitlements\": [ { \"license_module_type\": \"MACHINE_AGENT\", \"number_of_licenses\": 3 },{ \"license_module_type\": \"SIM_AGENT\", \"number_of_licenses\": 3 },{ \"license_module_type\": \"NETVIZ_AGENT\", \"number_of_licenses\": 3 },{\"license_module_type\": \"APM\", \"number_of_licenses\": 3 }], \"access_key\": \"b8c3ade5-8508-4afd-bb0e-5d66616c576b\"}";
 		AppDOnboardingRequest request = new AppDOnboardingRequest();
 		request.setRequestType("update");
@@ -206,11 +712,451 @@ public class AppDLicensesHandlerTest {
 		request.setRetryDetails(rDetails);
 		request.setRequestDetails(requestDetails);
 		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(json);
+				any(String.class))).thenReturn("{\n"
+				 		+ "    \"id\": 186   \n"
+				 		+ "}").thenReturn("{\n"
+					    		+ "    \"accountId\": 186, \n"
+					    		+ "    \"packages\": [\n"
+					    		+ "        {\n"
+					    		+ "            \"packageName\": \"apm-agent\",\n"
+					    		+ "            \"kind\": \"AGENT_BASED\",\n"
+					    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+					    		+ "            \"licenseUnits\": 185,\n"
+					    		+ "            \"properties\": {\n"
+					    		+ "                \"licenseModel\": \"FIXED\",\n"
+					    		+ "                \"edition\": \"PRO\",\n"
+					    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+					    		+ "            },\n"
+					    		+ "            \"agentTypes\": [\n"
+					    		+ "                \"APM\"\n"
+					    		+ "            ]\n"
+					    		+ "        }\n"
+					    		+ "    ]\n"
+					    		+ "}").thenReturn("{\n"
+					    				+ "    \"id\": \"4fe654cf-3d03-40b3-9e5e-9ac7b05d2435\",\n"
+					    				+ "    \"version\": 0,\n"
+					    				+ "    \"name\": \"Test-fabeha-check-for-license2\",\n"
+					    				+ "    \"description\": \"Created by AppD On-boarding Automation\",\n"
+					    				+ "    \"enabled\": true,\n"
+					    				+ "    \"constraints\": [\n"
+					    				+ "        {\n"
+					    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.ApplicationEntity\",\n"
+					    				+ "            \"constraint_type\": \"ALLOW_SELECTED\",\n"
+					    				+ "            \"match_conditions\": [\n"
+					    				+ "                {\n"
+					    				+ "                    \"match_type\": \"EQUALS\",\n"
+					    				+ "                    \"attribute_type\": \"NAME\",\n"
+					    				+ "                    \"match_string\": \"Test-fabeha-check-for-license2\"\n"
+					    				+ "                }\n"
+					    				+ "            ]\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.MachineEntity\",\n"
+					    				+ "            \"constraint_type\": \"ALLOW_ALL\",\n"
+					    				+ "            \"match_conditions\": []\n"
+					    				+ "        }\n"
+					    				+ "    ],\n"
+					    				+ "    \"entitlements\": [\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"NETVIZ\",\n"
+					    				+ "            \"number_of_licenses\": 0\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"MACHINE_AGENT\",\n"
+					    				+ "            \"number_of_licenses\": 8\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"SIM_MACHINE_AGENT\",\n"
+					    				+ "            \"number_of_licenses\": 0\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"APM\",\n"
+					    				+ "            \"number_of_licenses\": 8\n"
+					    				+ "        }\n"
+					    				+ "    ],\n"
+					    				+ "    \"account_id\": \"ff112693-e8c1-43d1-9838-2bb69b6c0e0a\",\n"
+					    				+ "    \"access_key\": \"a5a923c5-5e7b-4ff6-b178-05f52a7548c4\",\n"
+					    				+ "    \"total_licenses\": null,\n"
+					    				+ "   \n"
+					    				+ "}").thenReturn(json);
 		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
 		Mockito.when(
 				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
 				.thenReturn("Done");
+		licensesHandler.updateLicenses(request);
+	}
+	@Test
+	public void updateLicenseRuleForInfraTest() throws Exception {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		String responseId ="{\n"
+				+ "    \"id\": \"186\" \n"
+				+ "}";
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(responseId).thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn(responseId).thenReturn("[{  \"name\": \"test-check\",\n"
+		 								+ "    \"id\": \"3736\" \n"
+		 								+ "}]").thenReturn(responseId);
+
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenReturn("Done");
+		
+		assertEquals(true, licensesHandler.updateLicenses(request));
+	}
+	@Test(expected=AppDOnboardingException.class)
+	public void updateLicenseRuleForInfraIOExceptionTest() throws Exception {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		String responseId ="{\n"
+				+ "    \"id\": \"186\" \n"
+				+ "}";
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(responseId).thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn(responseId).thenReturn("[{  \"name\": \"test-check\",\n"
+		 								+ "    \"id\": \"3736\" \n"
+		 								+ "}]").thenReturn(responseId);
+
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenThrow(IOException.class);
+		
+		 licensesHandler.updateLicenses(request);
+	}
+	
+	@Test(expected=AppDOnboardingException.class)
+	public void updateLicenseRuleForInfraNullResponseTest() throws Exception {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		String responseId ="{\n"
+				+ "    \"id\": \"186\" \n"
+				+ "}";
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(responseId).thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn(responseId).thenReturn("[{  \"name\": \"test-check\",\n"
+		 								+ "    \"id\": \"3736\" \n"
+		 								+ "}]").thenReturn(responseId);
+
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenReturn(null);
+		licensesHandler.updateLicenses(request);
+		verify(licensesHandler, times(1)).updateLicenses(request);
+	}
+	@Test
+	public void updateLicenseRuleForInfraNullAllocationIdTest() throws Exception {
+		AppDOnboardingException error=null;
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		try {
+		String responseId ="{\n"
+				+ "    \"id\": \"186\" \n"
+				+ "}";
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(responseId).thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn(responseId).thenReturn(null).thenReturn(responseId);
+
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenReturn(null);
+		licensesHandler.updateLicenses(request);
+		}
+		catch(AppDOnboardingException e)
+		{
+			error=e;
+		}
+		assertNotNull(error);
+		verify(licensesHandler, times(1)).updateLicenses(request);
+	}
+	@Test
+	public void updateLicenseRuleForInfraAllocationIdIOExceptionTest() throws Exception {
+		AppDOnboardingException error=null;
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		try {
+		String responseId ="{\n"
+				+ "    \"id\": \"186\" \n"
+				+ "}";
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(responseId).thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"ENTERPRISE\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"INFRASTRUCTURE_BASED\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn(responseId).thenThrow(IOException.class);
+
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenReturn(null);
+		licensesHandler.updateLicenses(request);
+		}
+		catch(AppDOnboardingException e)
+		{
+			error=e;
+		}
+		assertNotNull(error);
+		verify(licensesHandler, times(1)).updateLicenses(request);
+	}
+	@Test(expected=AppDOnboardingException.class)
+	public void updateLicenseRuleForInfraForInvalidModelTest() throws Exception {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		String responseId ="{\n"
+				+ "    \"id\": \"186\" \n"
+				+ "}";
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(responseId).thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"xyz\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"abc\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn(responseId).thenReturn("[{  \"name\": \"test-check\",\n"
+		 								+ "    \"id\": \"3736\" \n"
+		 								+ "}]").thenReturn(responseId);
+
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenReturn("Done");
+		
+		licensesHandler.updateLicenses(request);
+	}
+	@Test(expected=AppDOnboardingException.class)
+	public void updateLicenseRuleForInfraForIOExceptionTest() throws Exception {
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("test-check");
+		requestDetails.setCtrlName("devnet");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		String responseId ="{\n"
+				+ "    \"id\": \"186\" \n"
+				+ "}";
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class),any(String.class),any(String.class),any(String.class))).thenReturn(responseId).thenReturn("{\n"
+		 				+ "    \"accountId\": 186,\n"
+		 				+ "    \"status\": \"LIMITED\",\n"
+		 				+ "    \"packages\": [\n"
+		 				+ "        {\n"
+		 				+ "            \"packageName\": \"xyz\",\n"
+		 				+ "            \"type\": \"PAID\",\n"
+		 				+ "            \"kind\": \"abc\",\n"
+		 				+ "   \n"
+		 				+ "            \n"
+		 				+ "        }\n"
+		 				+ "    ]\n"
+		 				+ "}").thenReturn(responseId).thenReturn("[{  \"name\": \"test-check\",\n"
+		 								+ "    \"id\": \"3736\" \n"
+		 								+ "}]").thenReturn(responseId);
+
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(appDApplicationCreationHandler.getAppID(any(String.class),any(String.class))).thenReturn("3736");
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenThrow(IOException.class);
+		
+		licensesHandler.updateLicenses(request);
+	}
+	
+	@Test(expected=AppDOnboardingException.class)
+	public void updateLicenseRuleTestForAgentExceptionTest() throws Exception {
+		String json = "{ \"name\": \"AppD-Test-New2\", \"entitlements\": [ { \"license_module_type\": \"MACHINE_AGENT\", \"number_of_licenses\": 3 },{ \"license_module_type\": \"SIM_AGENT\", \"number_of_licenses\": 3 },{ \"license_module_type\": \"NETVIZ_AGENT\", \"number_of_licenses\": 3 },{\"license_module_type\": \"APM\", \"number_of_licenses\": 3 }], \"access_key\": \"b8c3ade5-8508-4afd-bb0e-5d66616c576b\"}";
+		AppDOnboardingRequest request = new AppDOnboardingRequest();
+		request.setRequestType("update");
+		RetryDetails rDetails = new RetryDetails();
+		rDetails.setFailureModule("LicenseHandler");
+		RequestDetails requestDetails = new RequestDetails();
+		requestDetails.setAppGroupName("APMApp1");
+		requestDetails.setCtrlName("ciscoeft");
+		requestDetails.setApmLicenses(5);
+		request.setRetryDetails(rDetails);
+		request.setRequestDetails(requestDetails);
+		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class), any(String.class), any(String.class),
+				any(String.class))).thenReturn("{\n"
+				 		+ "    \"id\": 186   \n"
+				 		+ "}").thenReturn("{\n"
+					    		+ "    \"accountId\": 186, \n"
+					    		+ "    \"packages\": [\n"
+					    		+ "        {\n"
+					    		+ "            \"packageName\": \"apm-agent\",\n"
+					    		+ "            \"kind\": \"AGENT_BASED\",\n"
+					    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+					    		+ "            \"licenseUnits\": 185,\n"
+					    		+ "            \"properties\": {\n"
+					    		+ "                \"licenseModel\": \"FIXED\",\n"
+					    		+ "                \"edition\": \"PRO\",\n"
+					    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+					    		+ "            },\n"
+					    		+ "            \"agentTypes\": [\n"
+					    		+ "                \"APM\"\n"
+					    		+ "            ]\n"
+					    		+ "        }\n"
+					    		+ "    ]\n"
+					    		+ "}").thenReturn("{\n"
+					    				+ "    \"id\": \"4fe654cf-3d03-40b3-9e5e-9ac7b05d2435\",\n"
+					    				+ "    \"version\": 0,\n"
+					    				+ "    \"name\": \"Test-fabeha-check-for-license2\",\n"
+					    				+ "    \"description\": \"Created by AppD On-boarding Automation\",\n"
+					    				+ "    \"enabled\": true,\n"
+					    				+ "    \"constraints\": [\n"
+					    				+ "        {\n"
+					    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.ApplicationEntity\",\n"
+					    				+ "            \"constraint_type\": \"ALLOW_SELECTED\",\n"
+					    				+ "            \"match_conditions\": [\n"
+					    				+ "                {\n"
+					    				+ "                    \"match_type\": \"EQUALS\",\n"
+					    				+ "                    \"attribute_type\": \"NAME\",\n"
+					    				+ "                    \"match_string\": \"Test-fabeha-check-for-license2\"\n"
+					    				+ "                }\n"
+					    				+ "            ]\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.MachineEntity\",\n"
+					    				+ "            \"constraint_type\": \"ALLOW_ALL\",\n"
+					    				+ "            \"match_conditions\": []\n"
+					    				+ "        }\n"
+					    				+ "    ],\n"
+					    				+ "    \"entitlements\": [\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"NETVIZ\",\n"
+					    				+ "            \"number_of_licenses\": 0\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"MACHINE_AGENT\",\n"
+					    				+ "            \"number_of_licenses\": 8\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"SIM_MACHINE_AGENT\",\n"
+					    				+ "            \"number_of_licenses\": 0\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"APM\",\n"
+					    				+ "            \"number_of_licenses\": 8\n"
+					    				+ "        }\n"
+					    				+ "    ],\n"
+					    				+ "    \"account_id\": \"ff112693-e8c1-43d1-9838-2bb69b6c0e0a\",\n"
+					    				+ "    \"access_key\": \"a5a923c5-5e7b-4ff6-b178-05f52a7548c4\",\n"
+					    				+ "    \"total_licenses\": null,\n"
+					    				+ "   \n"
+					    				+ "}").thenReturn(json);
+		Mockito.when(requestHandler.getUpdatedRequest(any(AppDOnboardingRequest.class))).thenReturn(request);
+		Mockito.when(
+				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
+				.thenThrow(IOException.class);
 		licensesHandler.updateLicenses(request);
 	}
 
@@ -227,7 +1173,27 @@ public class AppDLicensesHandlerTest {
 		request.setRequestDetails(requestDetails);
 
 		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(null);
+				any(String.class))).thenReturn("{\n"
+				 		+ "    \"id\": 186   \n"
+				 		+ "}").thenReturn("{\n"
+					    		+ "    \"accountId\": 186, \n"
+					    		+ "    \"packages\": [\n"
+					    		+ "        {\n"
+					    		+ "            \"packageName\": \"apm-agent\",\n"
+					    		+ "            \"kind\": \"AGENT_BASED\",\n"
+					    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+					    		+ "            \"licenseUnits\": 185,\n"
+					    		+ "            \"properties\": {\n"
+					    		+ "                \"licenseModel\": \"FIXED\",\n"
+					    		+ "                \"edition\": \"PRO\",\n"
+					    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+					    		+ "            },\n"
+					    		+ "            \"agentTypes\": [\n"
+					    		+ "                \"APM\"\n"
+					    		+ "            ]\n"
+					    		+ "        }\n"
+					    		+ "    ]\n"
+					    		+ "}").thenReturn(null);
 
 		Mockito.when(
 				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
@@ -250,7 +1216,73 @@ public class AppDLicensesHandlerTest {
 		request.setRequestDetails(requestDetails);
 
 		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(json);
+				any(String.class))).thenReturn("{\n"
+				 		+ "    \"id\": 186   \n"
+				 		+ "}").thenReturn("{\n"
+					    		+ "    \"accountId\": 186, \n"
+					    		+ "    \"packages\": [\n"
+					    		+ "        {\n"
+					    		+ "            \"packageName\": \"apm-agent\",\n"
+					    		+ "            \"kind\": \"AGENT_BASED\",\n"
+					    		+ "            \"expirationDate\": \"2022-08-17T06:59:59Z\",\n"
+					    		+ "            \"licenseUnits\": 185,\n"
+					    		+ "            \"properties\": {\n"
+					    		+ "                \"licenseModel\": \"FIXED\",\n"
+					    		+ "                \"edition\": \"PRO\",\n"
+					    		+ "                \"maxNumberOfLicenses\": \"185\"\n"
+					    		+ "            },\n"
+					    		+ "            \"agentTypes\": [\n"
+					    		+ "                \"APM\"\n"
+					    		+ "            ]\n"
+					    		+ "        }\n"
+					    		+ "    ]\n"
+					    		+ "}").thenReturn("{\n"
+					    				+ "    \"id\": \"4fe654cf-3d03-40b3-9e5e-9ac7b05d2435\",\n"
+					    				+ "    \"version\": 0,\n"
+					    				+ "    \"name\": \"Test-fabeha-check-for-license2\",\n"
+					    				+ "    \"description\": \"Created by AppD On-boarding Automation\",\n"
+					    				+ "    \"enabled\": true,\n"
+					    				+ "    \"constraints\": [\n"
+					    				+ "        {\n"
+					    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.ApplicationEntity\",\n"
+					    				+ "            \"constraint_type\": \"ALLOW_SELECTED\",\n"
+					    				+ "            \"match_conditions\": [\n"
+					    				+ "                {\n"
+					    				+ "                    \"match_type\": \"EQUALS\",\n"
+					    				+ "                    \"attribute_type\": \"NAME\",\n"
+					    				+ "                    \"match_string\": \"Test-fabeha-check-for-license2\"\n"
+					    				+ "                }\n"
+					    				+ "            ]\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"entity_type_id\": \"com.appdynamics.modules.apm.topology.impl.persistenceapi.model.MachineEntity\",\n"
+					    				+ "            \"constraint_type\": \"ALLOW_ALL\",\n"
+					    				+ "            \"match_conditions\": []\n"
+					    				+ "        }\n"
+					    				+ "    ],\n"
+					    				+ "    \"entitlements\": [\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"NETVIZ\",\n"
+					    				+ "            \"number_of_licenses\": 0\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"MACHINE_AGENT\",\n"
+					    				+ "            \"number_of_licenses\": 8\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"SIM_MACHINE_AGENT\",\n"
+					    				+ "            \"number_of_licenses\": 0\n"
+					    				+ "        },\n"
+					    				+ "        {\n"
+					    				+ "            \"license_module_type\": \"APM\",\n"
+					    				+ "            \"number_of_licenses\": 8\n"
+					    				+ "        }\n"
+					    				+ "    ],\n"
+					    				+ "    \"account_id\": \"ff112693-e8c1-43d1-9838-2bb69b6c0e0a\",\n"
+					    				+ "    \"access_key\": \"a5a923c5-5e7b-4ff6-b178-05f52a7548c4\",\n"
+					    				+ "    \"total_licenses\": null,\n"
+					    				+ "   \n"
+					    				+ "}").thenReturn(json);
 
 		Mockito.when(
 				appdUtil.appDConnection(any(String.class), any(String.class), any(String.class), any(String.class)))
@@ -258,11 +1290,6 @@ public class AppDLicensesHandlerTest {
 		assertNotNull(licensesHandler.updateLicenses(request));
 	}
 
-	@Test(expected = AppDOnboardingException.class)
-	public void updateLicenseRuleTest4() throws Exception {
-		AppDOnboardingRequest request = new AppDOnboardingRequest();
-		assertNotNull(licensesHandler.updateLicenses(request));
-	}
 
 	@Test
 	public void handleRequesttest() throws Exception {
@@ -298,20 +1325,6 @@ public class AppDLicensesHandlerTest {
 	}
 
 	@Test
-	public void handleRequesttest3() throws Exception {
-		AppDOnboardingRequest request = new AppDOnboardingRequest();
-		RetryDetails rDetails = new RetryDetails();
-		rDetails.setFailureModule("LHANDLER");
-		rDetails.setOperationCounter(1);
-		request.setRequestType("delete");
-		request.setRetryDetails(rDetails);
-		Mockito.doReturn(true).when(licensesHandler).deleteLicenses(any(AppDOnboardingRequest.class));
-		Mockito.doNothing().when(licensesHandler).setNextHandler(any(AppDOnboardingRequestHandlerImpl.class));
-		Mockito.doNothing().when(licensesHandler).handleRequestImpl(any(AppDOnboardingRequest.class));
-		licensesHandler.handleRequest(request);
-	}
-
-	@Test
 	public void handleRequesttest4() throws Exception {
 		RetryDetails rDetails = new RetryDetails();
 		rDetails.setFailureModule("LHANDLER");
@@ -324,62 +1337,6 @@ public class AppDLicensesHandlerTest {
 		Mockito.doNothing().when(licensesHandler).setNextHandler(any(AppDOnboardingRequestHandlerImpl.class));
 		Mockito.doNothing().when(licensesHandler).handleRequestImpl(any(AppDOnboardingRequest.class));
 		licensesHandler.handleRequest(request);
-	}
-
-	@Test
-	public void deleteLicensesTest() throws Exception {
-		RequestDetails requestDetails = new RequestDetails();
-		requestDetails.setAppGroupName("Application Performance Management");
-		requestDetails.setCtrlName("cisco1nonprod");
-		AppDOnboardingRequest request = new AppDOnboardingRequest();
-		request.setRequestDetails(requestDetails);
-
-		String json = "{\"id\":\"2b21bf89-5f68-4388-af5a-68e0386c9e88\",\"version\":376,\"name\":\"Application Performance Management\",\"description\":\"Create By Onboarding API\",\"enabled\":true,\"constraints\":[],\"entitlements\":[],\"account_id\":\"8667be54-5612-408e-bd86-7266bbb4a6ff\",\"access_key\":\"f191a53d-2924-4117-bdb5-f02fdbccdfb1\",\"total_licenses\":null,\"peak_usage\":null}";
-		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(json);
-
-		String response = "Done";
-		Mockito.when(appdUtil.appDConnectionDelete(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(response);
-
-		licensesHandler.deleteLicenses(request);
-	}
-
-	@Test(expected = AppDOnboardingException.class)
-	public void deleteLicensesTest2() throws Exception {
-		RequestDetails requestDetails = new RequestDetails();
-		requestDetails.setAppGroupName("Application Performance Management");
-		requestDetails.setCtrlName("cisco1nonprod");
-		AppDOnboardingRequest request = new AppDOnboardingRequest();
-		request.setRequestDetails(requestDetails);
-
-		String json = "{\"version\":376,\"name\":\"Application Performance Management\",\"description\":\"Create By Onboarding API\",\"enabled\":true,\"constraints\":[],\"entitlements\":[],\"account_id\":\"8667be54-5612-408e-bd86-7266bbb4a6ff\",\"access_key\":\"f191a53d-2924-4117-bdb5-f02fdbccdfb1\",\"total_licenses\":null,\"peak_usage\":null}";
-		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(json);
-
-		String response = "Done";
-		Mockito.when(appdUtil.appDConnectionDelete(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(response);
-
-		licensesHandler.deleteLicenses(request);
-	}
-
-	@Test(expected = AppDOnboardingException.class)
-	public void deleteLicensesTest3() throws Exception {
-		RequestDetails requestDetails = new RequestDetails();
-		requestDetails.setAppGroupName("Application Performance Management");
-		requestDetails.setCtrlName("cisco1nonprod");
-		AppDOnboardingRequest request = new AppDOnboardingRequest();
-		request.setRequestDetails(requestDetails);
-
-		String json = "{\"id\":\"2b21bf89-5f68-4388-af5a-68e0386c9e88\",\"version\":376,\"name\":\"Application Performance Management\",\"description\":\"Create By Onboarding API\",\"enabled\":true,\"constraints\":[],\"entitlements\":[],\"account_id\":\"8667be54-5612-408e-bd86-7266bbb4a6ff\",\"access_key\":\"f191a53d-2924-4117-bdb5-f02fdbccdfb1\",\"total_licenses\":null,\"peak_usage\":null}";
-		Mockito.when(appdUtil.appDConnectionOnlyGet(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(json);
-
-		Mockito.when(appdUtil.appDConnectionDelete(any(String.class), any(String.class), any(String.class),
-				any(String.class))).thenReturn(null);
-
-		licensesHandler.deleteLicenses(request);
 	}
 
 	@Test

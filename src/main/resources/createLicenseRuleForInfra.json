@@ -1,0 +1,19 @@
+{
+	"name": "$LICENSE_RULE_NAME$",
+	
+	
+	"filters": [{
+	     "id": "",
+         "type": "APPLICATION",
+         "operator": "ID_EQUALS",
+         "value": "$APPLICATION_ID$"
+
+	}],
+   "limits": [
+            {
+                "id": "",
+                "package": "$PACKAGE_NAME$",
+                "units": "$NO_OF_UNITS$"
+            }
+        ]
+}

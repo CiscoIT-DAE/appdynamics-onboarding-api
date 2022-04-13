@@ -30,8 +30,8 @@ import com.cisco.maas.util.Constants;
 public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 	private static final Logger logger = LoggerFactory.getLogger(AppDLicensesHandler.class);
 	private String controllerPrefix;
-	private String appDBaseURL;
-	private String appDAccountIdURL;
+	private String licenseAccountIdURL;
+	private String  appdAccountIdURL;
 	private static final String PROTO = "https://";
 	private static final String ACCESS_KEY = "access_key";
 	private static final String ENTITLEMENTS = "entitlements";
@@ -42,6 +42,11 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 	private static final String LICENSE_RULE_BASE_URL = "mds/v1/license/rules";
 	private static final String LICENSE_RULE_NAME_URL = "mds/v1/license/rules/name/";
 	private static final String LICENSE="license";
+	private static final String LICENSE_MODEL_ENTERPRISE="ENTERPRISE";
+	private static final String LICENSE_MODEL_PREMIUM="PREMIUM";
+	private static final String LICENSE_RULE_NAME= "$LICENSE_RULE_NAME$";
+	private static final String LICENSE_MODEL_APM_AGENT ="apm-agent";
+	private static final String LICENSE_INFRA_URL="licensing/v1/account/"; 
 
 	@Autowired
 	AppDynamicsUtil appdUtil;
@@ -51,6 +56,9 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 	DBHandler dbHandler;
 	@Autowired
 	RequestHandler requestHandler;
+	@Autowired
+	AppDApplicationCreationHandler appDApplicationCreationHandler;
+	
 	/**
 	 * Initializing constants from config.properties file in constructor.
 	 */
@@ -60,8 +68,8 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 			Properties properties = new Properties();
 			properties.load(input);
 			controllerPrefix = properties.getProperty("appd.prefix");
-		    appDBaseURL = properties.getProperty("appd.saas.url");
-		    appDAccountIdURL = properties.getProperty("appd.getAppDAccountID.url");
+		    licenseAccountIdURL = properties.getProperty("appd.getLicenseAccountID.url");
+		    appdAccountIdURL = properties.getProperty("appd.getAppAccountID.url");
 		}
 	}
 	
@@ -111,7 +119,7 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 	 * @param appGroupName: String type application group name.
 	 * @param ctrlName: String type controller name.
 	 * @throws: IOException.
-	 * @rerurns : LicenseRule.
+	 * @returns : LicenseRule.
 	 */
 	public LicenseRule readLicenseRule(String appGroupName, String ctrlName) throws IOException {
 		logger.info("readLicenseRule - START");
@@ -160,65 +168,228 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 		try {
 			logger.info("createLicenseRule - START");
 			logger.info("createLicenseRule - Started License Rule Create API");
-
-			String accountId;
-			String accountConstant = "account";
-			String accountIdResponse = appdUtil.getRequest(appDAccountIdURL);
-			
-			JSONObject accountIdResponseJSON = new JSONObject(accountIdResponse);
-
-			if(accountIdResponseJSON.length()!=0 && accountIdResponseJSON.getJSONObject(accountConstant)!= null 
-					&& accountIdResponseJSON.getJSONObject(accountConstant).getString("key")!= null) {
-				accountId = accountIdResponseJSON.getJSONObject(accountConstant).getString("key");
-				}
-			else {
-				logger.error("createLicenseRule - Unable to fetch controller account id. "
-						+ "Response returned from controller is {0}",accountIdResponseJSON);
-				throw new AppDOnboardingException("AppDLicensesHandler - createLicenseRule - "
-						+ "Fetching of contoller id unsuccessful. Create License Rule Failed");
-			}
-			
-			String accessKey = UUID.randomUUID().toString();
 			String appGroupName = URLEncoder.encode(request.getRequestDetails().getAppGroupName(), UTF_8);
-			String rURL = PROTO + request.getRequestDetails().getCtrlName() + controllerPrefix + LICENSE_RULE_BASE_URL;
+			String licenseResponse = this.getLicenseModel(request.getRequestDetails().getCtrlName());
 			int noOfLicenses = request.getRequestDetails().getApmLicenses();
-
-			logger.info("createLicenseRule - License Rule Create API {}", rURL);
-
-			LicenseRule lr = this.readLicenseRule(appGroupName, request.getRequestDetails().getCtrlName());
-			if (lr == null) {
-				String json = this.prepareJSON(appGroupName, String.valueOf(noOfLicenses), accountId, accessKey);
-				String response = appdUtil.appDConnection(rURL, Constants.HTTP_VERB_POST, json,
-						LICENSE);
-
-				if (response != null) {
-					JSONObject res = new JSONObject(response);
-					logger.info("createLicenseRule - License Rule Create API Success with AccessKey {}",
-							res.get(ACCESS_KEY));
-					logger.info("createLicenseRule - response not null - END");
-					return res.get(ACCESS_KEY).toString();
-				}
-			} else {
-				logger.error("createLicenseRule - license rule is not null -  END");
-				logger.info("createLicenseRule - LR already exists");
-				request.setRequestStatus(Constants.REQUEST_STATUS_ERROR);
-				throw new AppDOnboardingException(
-						"AppDLicensesHandler - createLicenseRule - License Rule already exists need manual intervention",
-						request);
+			if(licenseResponse==null) {
+		           logger.error("createLicenseRule - license model package does not exist -  END");
+					logger.info("createLicenseRule - Creation of License failed");
+					throw new AppDOnboardingException(
+							"AppDLicensesHandler - createLicenseRule - Create License Rule failed - license model package does not exist ",
+							request);
 			}
-			logger.error("createLicenseRule - license rule is null and response also null -  END");
-			throw new AppDOnboardingException("AppDLicensesHandler - createLicenseRule - Create License Rule Failed",
-					request);
-		} catch (AppDOnboardingException ce) {
-			logger.error("createLicenseRule - AppDOnboardingException - ERROR");
-			throw new AppDOnboardingException(ce.getActualMessage(), request, ce);
+			if ((LICENSE_MODEL_ENTERPRISE).equals(licenseResponse) || (LICENSE_MODEL_PREMIUM).equals(licenseResponse)) {
+				return (this.createLicenseRuleForInfra(request, appGroupName, noOfLicenses, licenseResponse));
+			} else {
+				String accountId;
+				String accountConstant = "account";
+				String accountIdResponse = appdUtil.getRequest(licenseAccountIdURL);
+				JSONObject accountIdResponseJSON = new JSONObject(accountIdResponse);
+				if (accountIdResponseJSON.length() != 0 && accountIdResponseJSON.getJSONObject(accountConstant) != null
+						&& accountIdResponseJSON.getJSONObject(accountConstant).getString("key") != null) {
+					accountId = accountIdResponseJSON.getJSONObject(accountConstant).getString("key");
+				} else {
+					logger.error("createLicenseRule - Unable to fetch controller account id. "
+							+ "Response returned from controller is {0}", accountIdResponseJSON);
+					throw new AppDOnboardingException("AppDLicensesHandler - createLicenseRule - "
+							+ "Fetching of contoller id unsuccessful. Create License Rule Failed");
+				}
+				String accessKey = UUID.randomUUID().toString();
+				String rURL = PROTO + request.getRequestDetails().getCtrlName() + controllerPrefix
+						+ LICENSE_RULE_BASE_URL;
+				logger.info("createLicenseRule - License Rule Create API {}", rURL);
+				LicenseRule lr = this.readLicenseRule(appGroupName, request.getRequestDetails().getCtrlName());
+				if (lr == null) {
+					String json = this.prepareJSON(appGroupName, String.valueOf(noOfLicenses), accountId, accessKey);
+					String response = appdUtil.appDConnection(rURL, Constants.HTTP_VERB_POST, json, LICENSE);
+					if (response != null) {
+						JSONObject res = new JSONObject(response);
+						logger.info("createLicenseRule - License Rule Create API Success with AccessKey {}",
+								res.get(ACCESS_KEY));
+						logger.info("createLicenseRule - response not null - END");
+						return res.get(ACCESS_KEY).toString();
+					}
+				} else {
+					logger.error("createLicenseRule - license rule is not null -  END");
+					logger.info("createLicenseRule - LR already exists");
+					request.setRequestStatus(Constants.REQUEST_STATUS_ERROR);
+					throw new AppDOnboardingException(
+							"AppDLicensesHandler - createLicenseRule - License Rule already exists need manual intervention",
+							request);
+				}
+				logger.error("createLicenseRule - license rule is null and response also null -  END");
+				throw new AppDOnboardingException(
+						"AppDLicensesHandler - createLicenseRule - Create License Rule Failed", request);
+			}
+			
 		} catch (Exception e) {
 			logger.error("createLicenseRule - Exception -  ERROR");
 			throw new AppDOnboardingException("AppDLicensesHandler - createLicenseRule - Create License Rule Failed",
 					request, e);
 		}
 	}
+	/**
+	 * This method creates license rule for appD application for INFRASTRUCTURE based licensing model.
+	 * @param AppDOnboardingRequest: AppDOnboardingRequest type which contains appD application information.	 
+	 * @throws: AppDOnboardingException.
+	 * @returns: String type license key.
+	 */	
+	private String createLicenseRuleForInfra(AppDOnboardingRequest request, String appGroupName, int noOfLicenses, String licenseResponse) throws AppDOnboardingException {
+		try{
+		String infraURL = PROTO + request.getRequestDetails().getCtrlName() + controllerPrefix + LICENSE_INFRA_URL+this.getappdAccountId(request.getRequestDetails().getCtrlName())+ "/allocation";
+		String applicationId=appDApplicationCreationHandler.getAppID(request.getRequestDetails().getCtrlName(),request.getRequestDetails().getAppGroupName());
+		String jsonForInfra = this.prepareJSONForInfra(appGroupName, String.valueOf(noOfLicenses), applicationId,licenseResponse );
+		String responseForInfra = appdUtil.appDConnection(infraURL, Constants.HTTP_VERB_POST,  jsonForInfra,
+				LICENSE);
+			if (responseForInfra != null) {
+				JSONObject res = new JSONObject(responseForInfra);
+				logger.info("createLicenseRule - License Rule Create API Success with AccessKey {}",
+						res.get("licenseKey"));
+				logger.info("createLicenseRule - response not null - END");
+				return res.get("licenseKey").toString();
+			}else {
+				logger.error("createLicenseRule - license rule is not null -  END");
+				logger.info("createLicenseRule - LR already exists");
+				request.setRequestStatus(Constants.REQUEST_STATUS_ERROR);
+				throw new AppDOnboardingException(
+						"AppDLicensesHandler - createLicenseRuleForInfra- License Rule already exists need manual intervention",
+						request);
+			}
+			}catch (IOException e) {
+				logger.error("createLicenseRuleForInfra - Exception -  ERROR");
+				throw new AppDOnboardingException("AppDLicensesHandler - createLicenseRuleForInfra - Create License Rule Failed",
+						request, e);
+			}
+		
+	}
+
+	/**
+	 * This method creates Json object with given params.
+	 * @param appGroupName: String type which application group name.	 
+	 * @param noOfLicenses: String type license count.
+	 * @param applicationId: String type application ID.
+	 * @param packageName: String type package name of license
+	 * @throws: IOException.
+	 * @returns: String form of json to be sent as payload.
+	 */
+	private String prepareJSONForInfra(String appGroupName, String noOfLicenses, String applicationId,
+			String packageName) throws IOException {
+		logger.info("prepareJSONForInfra - START");
+		String sCurrentLine = "";
+		StringBuilder json = new StringBuilder();
+		File file = new File(getClass().getClassLoader().getResource("createLicenseRuleForInfra.json").getFile());
+		try (FileReader fr = new FileReader(file); BufferedReader buff = new BufferedReader(fr)) {
+			while ((sCurrentLine = buff.readLine()) != null) {
+
+				if (sCurrentLine.contains(LICENSE_RULE_NAME)) {
+					json.append(sCurrentLine.replace(LICENSE_RULE_NAME, URLDecoder.decode(appGroupName, UTF_8)));
+				} else if (sCurrentLine.contains("$APPLICATION_ID$")) {
+					json.append(sCurrentLine.replace("$APPLICATION_ID$", applicationId));
+				} else if (sCurrentLine.contains("$PACKAGE_NAME$")) {
+					json.append(sCurrentLine.replace("$PACKAGE_NAME$", packageName));
+				} else if (sCurrentLine.contains("$NO_OF_UNITS$")) {
+					json.append(sCurrentLine.replace("$NO_OF_UNITS$", String.valueOf(noOfLicenses)));
+				} else {
+					json.append(sCurrentLine);
+				}
+
+			}
+		}
+		logger.info("prepareJSONForInfra - END");
+		return json.toString();
+	}
+
+
+	/**
+	 * This method gets the Licensing Model used by the AppDynamics Controller.
+	 * @param controller: name of AppDynamics controller 
+	 * @throws: AppDOnboardingException: if AppDynamics connection fails
+	 * @returns: String: the license model being followed by controller and null if the license model followed does not has agents for APM
+	 */
+	private String getLicenseModel(String controller) throws AppDOnboardingException {
+		try {
+		logger.info("getLicenseModel- START");
+		String accountId = getappdAccountId(controller);
+		String rURL = PROTO + controller + controllerPrefix + LICENSE_INFRA_URL + accountId +"/info";
+		String licenseModelResponse= appdUtil.appDConnectionOnlyGet(rURL, Constants.HTTP_VERB_GET, controller, LICENSE);
+		JSONObject licenseModelResponseJSON = new JSONObject(licenseModelResponse);
+		if(licenseModelResponseJSON.length()!=0 && ((JSONArray) licenseModelResponseJSON.get("packages")).length()!=0) {
+			JSONArray packages= (JSONArray) licenseModelResponseJSON.get("packages");
+
+		if (checkKeyInPackage(packages, LICENSE_MODEL_ENTERPRISE)!=null) {
+			  return  LICENSE_MODEL_ENTERPRISE;
+		}else if (checkKeyInPackage(packages, LICENSE_MODEL_PREMIUM)!=null) {
+			  return  LICENSE_MODEL_PREMIUM;
+		}else if (checkKeyInPackage(packages,LICENSE_MODEL_APM_AGENT)!=null) {
+			return LICENSE_MODEL_APM_AGENT;
+		}
+
+		}
+		} catch (IOException e) {
+			logger.error("getLicenseModel- Exception -  ERROR");
+			throw new AppDOnboardingException("AppDLicensesHandler - getLicenseModel - Create License Rule Failed", e);
+		}
+		return null;
+	}
+
+	/**
+	 * This method check key in package name of Licensing API payload and returns the Model followed
+	 * @param key: String type which contains the packageName to be checked 
+	 * @param packages: JSONArray of packages followed by AppD Controller
+	 * @returns: String key if found in package else returns null if key is not present
+	 */
+	private String checkKeyInPackage(JSONArray packages, String key) {
+		for (int i = 0; i < packages.length(); i++) {
+			String packageName = packages.getJSONObject(i).get("packageName").toString();
+			if (packageName.equals(key)) {
+				logger.info("checkKeyInPackage - key is in package {}", key);
+				if (key.equals(LICENSE_MODEL_APM_AGENT)) {
+					if ("AGENT_BASED".equals(packages.getJSONObject(i).get("kind").toString())) {
+						logger.info("checkKeyInPackage - type of licensing model is {}",
+								packages.getJSONObject(i).get("kind"));
+						return key;
+					}
+				} else {
+					if ("INFRASTRUCTURE_BASED".equals(packages.getJSONObject(i).get("kind").toString())) {
+						logger.info("checkKeyInPackage - type of licensing model is {}",
+								packages.getJSONObject(i).get("kind"));
+						return key;
+					}
+				}
+			} 
+		} 
+      return null;
+
+	}
+
+	/**
+	 * This method gets account Id for AppDynamics controller.
+	 * @param ctrlName : The AppDynamics controller for which accound Id is required
+	 * @throws: AppDOnboardingException:if appDConnection throws IOException or response received is null or getting id from JSONObject throws JSONException
+	 * @returns: String: the account Id of the controller
+	 */	
+	private String getappdAccountId(String controller) throws AppDOnboardingException {
+		try {
+		String rURL = PROTO + controller + controllerPrefix + appdAccountIdURL;
+		String accountIdResponse= appdUtil.appDConnectionOnlyGet(rURL, Constants.HTTP_VERB_GET, controller, "licenseQuota");
+		JSONObject accountIdResponseJSON = new JSONObject(accountIdResponse);
+		if(accountIdResponseJSON.length()!=0 && accountIdResponseJSON.get("id")!= null) {
+			String accountId = accountIdResponseJSON.get("id").toString();
+			logger.info("getappdAccountId - account Id is {}",accountId);
+			return accountId;
+			}
+		else {
+			logger.error("getappdAccountId - Unable to fetch controller account id. "
+					+ "Response returned from controller is {0}",accountIdResponseJSON);
+			throw new AppDOnboardingException("AppDLicensesHandler - getappdAccountId - Fetching of contoller id unsuccessful");
+		}
+		} catch (Exception e) {
+			logger.error("createLicenseRule - Exception -  ERROR");
+			throw new AppDOnboardingException("AppDLicensesHandler - getappdAccountId -  Getting AppDynamics Account Id unsuccessful - getappdAccountId Failed due to exception", e);
+		}
 	
+	}
+
 	/**
 	 * This method creates Json object with given params.
 	 * @param appGroupName: String type which application group name.	 
@@ -240,9 +411,9 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 
 					if (sCurrentLine.contains("$LICENSE_RULE_UUID$")) {
 						json.append(sCurrentLine.replace("$LICENSE_RULE_UUID$", UUID.randomUUID().toString()));
-					} else if (sCurrentLine.contains("$LICENSE_RULE_NAME$")) {
+					} else if (sCurrentLine.contains( LICENSE_RULE_NAME)) {
 						json.append(
-								sCurrentLine.replace("$LICENSE_RULE_NAME$", URLDecoder.decode(appGroupName, UTF_8)));
+								sCurrentLine.replace( LICENSE_RULE_NAME, URLDecoder.decode(appGroupName, UTF_8)));
 					} else if (sCurrentLine.contains("$APP_NAME$")) {
 						json.append(sCurrentLine.replace("$APP_NAME$", URLDecoder.decode(appGroupName, UTF_8)));
 					} else if (sCurrentLine.contains("$NETVIZ_AGENT_LICENSE_COUNT$")) {
@@ -282,85 +453,48 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 				request.getRetryDetails().setFailureModule(FAILUREMODULE);
 				request = requestHandler.getUpdatedRequest(request);
 			}
-			String rURL = PROTO + request.getRequestDetails().getCtrlName() + controllerPrefix + LICENSE_RULE_BASE_URL;
-			logger.info("updateLicenses - License Rule Update API {}", rURL);
-
-			LicenseRule lr = this.readLicenseRule(request.getRequestDetails().getAppGroupName(),
-					request.getRequestDetails().getCtrlName());
-			if (lr != null) {
-				logger.info("updateLicenses - Update licenses");
-				JSONObject existingLicenseData = lr.getJson();
-				int noOfLicenses = request.getRequestDetails().getApmLicenses();
-				String updatedLicenseData = this.prepareJSON(existingLicenseData, noOfLicenses, noOfLicenses);
-				String response = appdUtil.appDConnection(rURL, Constants.HTTP_VERB_PUT,
-						updatedLicenseData, LICENSE);
-				if (response != null) {
-					logger.info("updateLicenses - Ended Updating licenses ");
-					logger.info("updateLicenses -  response is not null - END");
-					return true;
-				} else {
-					logger.info("updateLicenses - response is null - END");
-					logger.info("updateLicenses - Failed Updating licenses ");
-					throw new AppDOnboardingException(
-							"AppDLicensesHandler - updateLicenses - Update License Rule Failed", request);
+			String licenseResponse= this.getLicenseModel(request.getRequestDetails().getCtrlName());
+			if(licenseResponse!=null && (LICENSE_MODEL_APM_AGENT.equals(licenseResponse))){
+				String rURL = PROTO + request.getRequestDetails().getCtrlName() + controllerPrefix + LICENSE_RULE_BASE_URL;
+				logger.info("updateLicenses - License Rule Update API {}", rURL);
+				LicenseRule lr = this.readLicenseRule(request.getRequestDetails().getAppGroupName(), request.getRequestDetails().getCtrlName());
+				if (lr != null) {
+					logger.info("updateLicenses - Update licenses");
+					JSONObject existingLicenseData = lr.getJson();
+					int noOfLicenses = request.getRequestDetails().getApmLicenses();
+					String updatedLicenseData = this.prepareJSON(existingLicenseData, noOfLicenses, noOfLicenses);
+					String response = appdUtil.appDConnection(rURL, Constants.HTTP_VERB_PUT,
+							updatedLicenseData, LICENSE);
+					if (response != null) {
+						logger.info("updateLicenses - Ended Updating licenses ");
+						logger.info("updateLicenses -  response is not null - END");
+						return true;
+					} else {
+						logger.info("updateLicenses - response is null - END");
+						logger.info("updateLicenses - Failed Updating licenses ");
+						throw new AppDOnboardingException(
+								"AppDLicensesHandler - updateLicenses - Update License Rule Failed", request);
+					}
 				}
-			}
-			logger.error("AppDLicensesHandler - updateLicenses - lr is null - ERROR");
-			throw new AppDOnboardingException("AppDLicensesHandler - updateLicenses - License Rule Does not Exist",
-					request);
-		} catch (Exception e) {
+				logger.error("AppDLicensesHandler - updateLicenses - lr is null - ERROR");
+				throw new AppDOnboardingException("AppDLicensesHandler - updateLicenses - License Rule Does not Exist",
+						request);
+		}else if  ((LICENSE_MODEL_ENTERPRISE).equals(licenseResponse)|| ( LICENSE_MODEL_PREMIUM).equals(licenseResponse)){
+			String applicationId=appDApplicationCreationHandler.getAppID(request.getRequestDetails().getCtrlName(),request.getRequestDetails().getAppGroupName());
+			return this.updateLicensesForInfra(request, applicationId, licenseResponse);
+		}else {
+			logger.info("updateLicenses - Failed Updating licenses ");
+			throw new AppDOnboardingException(
+					"AppDLicensesHandler - updateLicenses - License model does not support apm agents licenses ", request);
+		}
+		 } catch (IOException e) {
 			logger.error("updateLicenses - exception - ERROR");
-			throw new AppDOnboardingException("AppDLicensesHandler - updateLicenses - Update License Rule Failed",
+			throw new AppDOnboardingException("AppDLicensesHandler - updateLicenses - Update License Rule Failed due to IOException",
 					request, e);
 		}
+		
 	}
 	
-	
-	/**
-	 * This method deletes license for given appD application.
-	 * @param AppDOnboardingRequest: AppDOnboardingRequest type which contains appD application information.	 
-	 * @throws: AppDOnboardingException.
-	 * @returns: boolean.
-	 */	
-	public boolean deleteLicenses(AppDOnboardingRequest request) throws AppDOnboardingException {
-		logger.info("deleteLicenses - START");
-		logger.info("deleteLicenses - Started Deleting license rule");
-		try {
-			String rURL = PROTO + request.getRequestDetails().getCtrlName() + controllerPrefix + LICENSE_RULE_NAME_URL
-					+ request.getRequestDetails().getAppGroupName();
-			logger.info("deleteLicenses - License Rule Read API {}", rURL);
-
-			String response = appdUtil.appDConnectionOnlyGet(rURL, Constants.HTTP_VERB_GET, request.getRequestDetails().getCtrlName(),
-					LICENSE);
-			if (response != null) {
-				JSONObject res = new JSONObject(response);
-				String ruleId = res.get("id").toString();
-
-				String rURL1 = appDBaseURL+LICENSE_RULE_BASE_URL+"/";
-				rURL = PROTO + request.getRequestDetails().getCtrlName() + rURL1 + ruleId;
-
-				response = appdUtil.appDConnectionDelete(rURL, Constants.HTTP_VERB_DELETE, request.getRequestDetails().getCtrlName(),
-						LICENSE);
-
-				if (response != null) {
-					logger.info("deleteLicenses - Ended Deleting license rule");
-					logger.info("deleteLicenses - appDConnectionDelete response is not null -  END");
-					return true;
-				} else {					
-					logger.info("deleteLicenses - Failed Deleting license rule");
-					logger.info("deleteLicenses - appDConnectionDelete response is null - END");
-					throw new AppDOnboardingException(
-							"AppDLicensesHandler - deleteLicenses - Delete License Rule Failed", request);
-				}
-			}
-			logger.info("deleteLicenses - appDConnectionOnlyGet response is null- END");
-			return true;
-		} catch (Exception e) {
-			logger.error("deleteLicenses - Exception -  ERROR");
-			throw new AppDOnboardingException("AppDLicensesHandler - deleteLicenses - Delete License Rule Failed",
-					request, e);
-		}
-	}
 
 	/**
 	 * This method creates Json object with given params.
@@ -436,9 +570,7 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 				licenseData.put("constraints", constraintsData);
 				rURL = PROTO + ctrlName + controllerPrefix + LICENSE_RULE_BASE_URL;
 				logger.info("resourceMoveUpdateLicense - license rule json {}", licenseData);
-
 				logger.info("resourceMoveUpdateLicense - License Rule Update API {}", rURL);
-
 				response = appdUtil.appDConnection(rURL, Constants.HTTP_VERB_PUT, licenseData.toString(), LICENSE);
 				if (response != null) {
 					logger.info("resourceMoveUpdateLicense - Ended Updating licenses API");
@@ -461,5 +593,75 @@ public class AppDLicensesHandler extends AppDOnboardingRequestHandlerImpl {
 					"AppDLicensesHandler - resourceMoveUpdateLicense - Update License Rule Failed", request, e);
 		}
 
+	}
+
+	/**
+	 * This method Updates license for given appD application.
+	 * @param AppDOnboardingRequest: AppDOnboardingRequest type which contains appD application information.	 
+	 * @throws: AppDOnboardingException.
+	 * @returns: boolean.
+	 */	
+	public boolean updateLicensesForInfra(AppDOnboardingRequest request,String applicationId, String licenseResponse) throws AppDOnboardingException {
+		try {
+			logger.info("updateLicensesForInfra - START");
+			logger.info("updateLicensesForInfra - Started Updating licenses ");	
+			String allocationId = this.getLicenseRuleAllocationId(request.getRequestDetails().getAppGroupName(),
+					request.getRequestDetails().getCtrlName());
+			if (allocationId != null) {
+				logger.info("updateLicensesForInfra - Update licenses");
+				String jsonForInfra = this.prepareJSONForInfra(request.getRequestDetails().getAppGroupName(),  String.valueOf(request.getRequestDetails().getApmLicenses()), applicationId,licenseResponse);
+				String infraURL = PROTO + request.getRequestDetails().getCtrlName() + controllerPrefix + LICENSE_INFRA_URL+this.getappdAccountId(request.getRequestDetails().getCtrlName())+ "/allocation/"+allocationId;
+				logger.info("updateLicensesForInfra - License Rule Update API {}", infraURL);
+				String response = appdUtil.appDConnection(infraURL, Constants.HTTP_VERB_PUT, jsonForInfra, LICENSE);
+				if (response != null) {
+					logger.info("updateLicensesForInfra - Ended Updating licenses ");
+					logger.info("updateLicensesForInfra -  response is not null - END");
+					return true;
+				} else {
+					logger.info("updateLicensesForInfra - response is null - END");
+					logger.info("updateLicensesForInfra - Failed Updating licenses ");
+					throw new AppDOnboardingException(
+							"AppDLicensesHandler - updateLicenses - Update License Rule Failed", request);
+				}
+			}
+			logger.error("AppDLicensesHandler - updateLicensesForInfra - lr is null - ERROR");
+			throw new AppDOnboardingException("AppDLicensesHandler - updateLicensesForInfra - License Rule Does not Exist",
+					request);
+		} catch (IOException e) {
+			logger.error("updateLicensesForInfra - exception - ERROR");
+			throw new AppDOnboardingException("AppDLicensesHandler - updateLicensesForInfra - Update License Rule Failed",
+					request, e);
+		}
+	}
+	/**
+	 * This method gets allocation Id for license rule for given appD application.
+	 * @param appGroupName: The name of the license rule	
+	 * @param ctrlName : The AppDynamics controller in which license allocation needs to be updated
+	 * @throws: AppDOnboardingException.
+	 * @returns: String: the allocationId of the license rule nd null if no such license exists
+	 */	
+	private String getLicenseRuleAllocationId(String appGroupName, String ctrlName) throws AppDOnboardingException {
+		try {
+			logger.info("getLicenseRuleAllocationId - START");
+			String infraURL = PROTO + ctrlName + controllerPrefix + LICENSE_INFRA_URL + this.getappdAccountId(ctrlName)
+					+ "/allocation";
+			logger.info("getLicenseRuleAllocationId - API to get all License Rule:: {}", infraURL);
+			String response = appdUtil.appDConnectionOnlyGet(infraURL, Constants.HTTP_VERB_GET, ctrlName, LICENSE);
+			if (response != null && response.length() != 0) {
+				JSONArray result = new JSONArray(response);
+				for (int i = 0; i < result.length(); i++) {
+					if ((appGroupName).equals(result.getJSONObject(i).get("name").toString())) {
+						logger.info("getLicenseRuleAllocationId - Found allocation for {} - END", appGroupName);
+						return (String) result.getJSONObject(i).get("id");
+					}
+				}
+			}
+		} catch (IOException e) {
+			logger.error("updateLicensesForInfra - exception - ERROR");
+			throw new AppDOnboardingException(
+					"AppDLicensesHandler - updateLicensesForInfra - Update License Rule Failed", e);
+		}
+		logger.info("getLicenseRuleAllocationId - END");
+		return null;
 	}
 }
