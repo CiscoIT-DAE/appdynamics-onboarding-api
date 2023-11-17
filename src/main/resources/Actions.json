@@ -1,7 +1,7 @@
 [
      {
         "actionType": "EmailAction",
-        "name": "$ALERT_UUID$",
+        "name": "$ALERT_ALIAS$",
         "priority": 1,
         "description": null,
         "toAddress": "$ALERT_ALIAS$",
