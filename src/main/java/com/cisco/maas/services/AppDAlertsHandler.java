@@ -286,8 +286,7 @@ public class AppDAlertsHandler extends AppDOnboardingRequestHandlerImpl {
 			String ctrlName = request.getRequestDetails().getCtrlName();
 			String rURL = ALERT_BASE_URL + applicationId + "/" + ACTIONS;
 			rURL = Constants.PROTO + ctrlName + controllerPrefix + rURL;
-			String payloadJson = "{\r\n\t\"actionType\": \"EMAIL\",\r\n\t\"emails\": [\r\n\"" + alertAliases
-					+ "\"\r\n]\r\n}";
+			String payloadJson ="{\n\t\"actionType\": \"EMAIL\",\n\t\"emails\": [\n\"" + alertAliases +"\"\n],\n\"name\":\"" + alertAliases + "\"\n}";
 			logger.info("createDynamicAction - Getting response in createDynamicAction");
 			String response = appdUtil.appDConnection(rURL, Constants.HTTP_VERB_POST, payloadJson, "createAction");
 			if (response == null) {
